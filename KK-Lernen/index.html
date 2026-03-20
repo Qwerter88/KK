@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Pflanzen-Lernkarten (Kartenset)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Pflanzen-Lernkarten – Kartenset</h1>
+    <div class="top-bar">
+      <label for="levelSelect">Schwierigkeitsstufe:</label>
+      <select id="levelSelect">
+        <option value="einfach">Einfach</option>
+        <option value="mittel">Mittel</option>
+        <option value="schwer">Schwer</option>
+      </select>
+      <button id="restartBtn">Neustart</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="cardContainer">
+      <!-- Karteikarte wird durch script.js generiert -->
+    </section>
+
+    <section id="optionsContainer">
+      <h2>Bausteine</h2>
+      <div id="optionsList">
+        <!-- Drag-&-Drop-Elemente (Einfach/Mittel) -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div id="cardCounter"></div>
+    <div id="feedback"></div>
+    <div class="nav-buttons">
+      <button id="checkBtn">Prüfen</button>
+      <button id="nextBtn">Weiter</button>
+    </div>
+    <p class="small">
+      Lehrkräfte: <a href="edit.html">Karteikarten bearbeiten</a>
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
