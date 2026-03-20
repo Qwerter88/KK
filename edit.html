@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Karteikarten-Editor (Lehrkräfte)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="checkEditPassword()">
+  <header>
+    <h1>Karteikarten-Editor (nur Lehrkräfte)</h1>
+  </header>
+
+  <main>
+    <div class="edit-container">
+      <p>Fülle das Formular aus und kopiere den erzeugten Objektblock unten in die <code>cards</code>-Liste in <code>script.js</code>.</p>
+
+      <form id="editForm">
+        <label for="id">ID (kurzer Name, z.B. thymian):</label><br>
+        <input type="text" id="id" name="id" required><br>
+
+        <label for="germanName">Deutscher Name (z.B. Thymian):</label><br>
+        <input type="text" id="germanName" name="germanName" required><br>
+
+        <hr>
+
+        <h3>Drogenbezeichnung (3 Teile)</h3>
+        <p>Beispiel Thymian: Teil 1 = Thymian, Teil 2 = Thymi, Teil 3 = herba. Das „–“ wird automatisch eingefügt.</p>
+        <label for="drogen1">Teil 1:</label><br>
+        <input type="text" id="drogen1" name="drogen1"><br>
+        <label for="drogen2">Teil 2:</label><br>
+        <input type="text" id="drogen2" name="drogen2"><br>
+        <label for="drogen3">Teil 3:</label><br>
+        <input type="text" id="drogen3" name="drogen3"><br>
+
+        <hr>
+
+        <h3>Stammpflanze und Familie</h3>
+        <label for="stammpflanze1">Stammpflanze (1. Zeile – wird immer angezeigt):</label><br>
+        <input type="text" id="stammpflanze1" name="stammpflanze1" required><br>
+
+        <p>Familie als 2 Teile; das „-” steht automatisch dazwischen. Beispiel: Teil 1 = Lippenblütler, Teil 2 = Lamiaceae.</p>
+        <label for="familie1">Familie Teil 1:</label><br>
+        <input type="text" id="familie1" name="familie1"><br>
+        <label for="familie2">Familie Teil 2:</label><br>
+        <input type="text" id="familie2" name="familie2"><br>
+
+        <hr>
+
+        <label for="inhaltsstoffe">Inhaltsstoffe (je eine Zeile):</label><br>
+        <textarea id="inhaltsstoffe" name="inhaltsstoffe"></textarea><br>
+
+        <label for="wirkung">Wirkung (je eine Zeile):</label><br>
+        <textarea id="wirkung" name="wirkung"></textarea><br>
+
+        <label for="anwendung">Anwendung (je eine Zeile):</label><br>
+        <textarea id="anwendung" name="anwendung"></textarea><br>
+
+        <label for="warnhinweise">Warnhinweise, Zusatzinformation (je eine Zeile):</label><br>
+        <textarea id="warnhinweise" name="warnhinweise"></textarea><br>
+
+        <fieldset>
+          <legend>Schwierigkeitsstufen, auf denen diese Karte erscheinen soll:</legend>
+          <label><input type="checkbox" name="levelEinfach" checked> Einfach</label><br>
+          <label><input type="checkbox" name="levelMittel" checked> Mittel</label><br>
+          <label><input type="checkbox" name="levelSchwer" checked> Schwer</label><br>
+        </fieldset>
+
+        <button type="submit">Objekt erzeugen</button>
+      </form>
+
+      <h2>Erzeugtes Objekt</h2>
+      <div id="editOutput" class="edit-output"></div>
+
+      <p class="small">
+        Anleitung: Öffne <code>script.js</code>, suche das <code>cards = [ ... ]</code>-Array und füge den erzeugten Block dort ein.
+      </p>
+      <p><a href="index.html">Zurück zur Lernansicht</a></p>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
