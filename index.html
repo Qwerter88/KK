@@ -78,4 +78,84 @@
 
   <script src="script.js"></script>
 </body>
+</html><!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Arzneipflanzen-Quiz – LBS St. Pölten</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Start-/Willkommensbereich -->
+  <div id="landing">
+    <div class="landing-inner">
+      <h1>Willkommen beim Arzneipflanzen-Quiz der LBS St. Pölten!</h1>
+      <p class="landing-subtitle">
+        Wähle deinen Lernmodus und entdecke wichtige Arzneipflanzen.
+      </p>
+
+      <div class="mode-grid">
+        <div class="mode-card">
+          <button class="mode-btn" data-mode="einfach">Einfach</button>
+          <p class="mode-desc">Quiz mit richtigen Antwortvorschlägen</p>
+        </div>
+        <div class="mode-card">
+          <button class="mode-btn" data-mode="mittel">Mittel</button>
+          <p class="mode-desc">Quiz mit richtigen und falschen Antwortvorschlägen</p>
+        </div>
+        <div class="mode-card">
+          <button class="mode-btn" data-mode="schwer">Schwer</button>
+          <p class="mode-desc">Quiz ohne Antwortvorschläge</p>
+        </div>
+        <div class="mode-card">
+          <button class="mode-btn" data-mode="eigen">Eigenes Lernen</button>
+          <p class="mode-desc">(wird noch definiert)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lernbereich -->
+  <div id="app" class="hidden">
+    <header>
+      <h2>Pflanzen-Lernkarten – Kartenset</h2>
+      <div class="top-bar">
+        <label for="levelSelect">Schwierigkeitsstufe:</label>
+        <select id="levelSelect">
+          <option value="einfach">Einfach</option>
+          <option value="mittel">Mittel</option>
+          <option value="schwer">Schwer</option>
+        </select>
+        <button id="restartBtn">Neustart</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="cardContainer">
+        <!-- Karteikarte wird durch script.js generiert -->
+      </section>
+
+      <section id="optionsContainer">
+        <h3>Bausteine</h3>
+        <div id="optionsList">
+          <!-- Drag-/Tap-Bausteine für Einfach/Mittel -->
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div id="cardCounter"></div>
+      <div id="feedback"></div>
+      <div class="nav-buttons">
+        <button id="checkBtn">Prüfen</button>
+        <button id="nextBtn">Weiter</button>
+      </div>
+      <p class="small">
+        Lehrkräfte: <a href="edit.html">Karteikarten bearbeiten</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
