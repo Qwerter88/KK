@@ -1100,6 +1100,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // auf edit.html gibt es landing/app nicht
   if (!landing && !app) return;
 
+  // Landing-Buttons mit Modus verknüpfen
+  modeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.mode;
+      startMode(mode);
+    });
+  });
+
   function clearFeedback() {
     if (!feedback) return;
     feedback.textContent = "";
@@ -1239,8 +1247,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---------- Landing: Lernmodus starten ----------
-
   function startMode(mode) {
     if (landing) landing.classList.add("hidden");
     if (app) app.classList.remove("hidden");
@@ -1260,15 +1266,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initLevel();
   }
-
-  modeButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const mode = btn.dataset.mode;
-      startMode(mode);
-    });
-  });
-
-  // ---------- Prüfung ----------
 
   function checkAnswers() {
     const card = getCurrentCard();
@@ -1452,8 +1449,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Event-Handler für Lernansicht
-
   if (levelSelect) {
     levelSelect.addEventListener("change", () => {
       currentLevel = levelSelect.value;
@@ -1474,11 +1469,10 @@ function setupDragDrop(card, level) {
   const isTouch =
     "ontouchstart" in window ||
     navigator.maxTouchPoints > 0 ||
-    navigator.msMaxTouchPoints > 0; [web:201][web:204]
+    navigator.msMaxTouchPoints > 0; [web:199][web:201]
 
   let options = [];
 
-  // richtige Optionen
   (card.drogenParts || []).forEach(text => {
     options.push({ text, group: "drogen", correct: true });
   });
@@ -1494,7 +1488,6 @@ function setupDragDrop(card, level) {
   pushCorrect(card.anwendung || [], "anwendung");
   pushCorrect(card.warnhinweise || [], "warnhinweise");
 
-  // Mittel: 1:1 Distraktoren
   if (level === "mittel") {
     const otherCards = cards.filter(c => c.id !== card.id);
 
@@ -1543,8 +1536,6 @@ function setupDragDrop(card, level) {
 
   const shuffledOptions = shuffleArray(options);
 
-  // Desktop-Drag-Logik
-
   function createOptionElementDesktop(opt) {
     const el = document.createElement("div");
     el.className = "option-item";
@@ -1567,8 +1558,6 @@ function setupDragDrop(card, level) {
       elem.classList.remove("dragging");
     });
   }
-
-  // Touch: Tippen zum Einfügen
 
   let selectedOption = null;
 
@@ -1612,8 +1601,6 @@ function setupDragDrop(card, level) {
       });
     });
   }
-
-  // Initialisierung der Optionsliste
 
   if (isTouch) {
     shuffledOptions.forEach(opt => {
