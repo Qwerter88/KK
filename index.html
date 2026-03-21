@@ -2,36 +2,42 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Arzneipflanzen-Quiz – LBS St. Pölten</title>
+  <title>Pflanzen-Lernkarten – KK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <!-- Start-/Willkommensbereich -->
   <div id="landing">
-    <div class="landing-inner">
-      <h1>Willkommen beim Arzneipflanzen-Quiz der LBS St. Pölten!</h1>
-      <p class="landing-subtitle">
-        Wähle deinen Lernmodus und entdecke wichtige Arzneipflanzen.
-      </p>
+    <h1>Pflanzen-Lernkarten</h1>
+    <p>Wähle eine Schwierigkeitsstufe, um zu starten:</p>
 
-      <div class="mode-grid">
-        <div class="mode-card">
-          <button class="mode-btn" data-mode="einfach">Einfach</button>
-          <p class="mode-desc">Quiz mit richtigen Antwortvorschlägen</p>
-        </div>
-        <div class="mode-card">
-          <button class="mode-btn" data-mode="mittel">Mittel</button>
-          <p class="mode-desc">Quiz mit richtigen und falschen Antwortvorschlägen</p>
-        </div>
-        <div class="mode-card">
-          <button class="mode-btn" data-mode="schwer">Schwer</button>
-          <p class="mode-desc">Quiz ohne Antwortvorschläge</p>
-        </div>
-        <div class="mode-card">
-          <button class="mode-btn" data-mode="eigen">Eigenes Lernen</button>
-          <p class="mode-desc">(wird noch definiert)</p>
-        </div>
-      </div>
+    <div class="mode-grid">
+      <button
+        class="mode-btn"
+        data-mode="einfach"
+        onclick="window.startMode && window.startMode('einfach')">
+        Einfach
+      </button>
+      <button
+        class="mode-btn"
+        data-mode="mittel"
+        onclick="window.startMode && window.startMode('mittel')">
+        Mittel
+      </button>
+      <button
+        class="mode-btn"
+        data-mode="schwer"
+        onclick="window.startMode && window.startMode('schwer')">
+        Schwer
+      </button>
+      <button
+        class="mode-btn"
+        data-mode="custom"
+        onclick="window.startMode && window.startMode('custom')">
+        Eigenes Lernen
+      </button>
     </div>
   </div>
 
@@ -51,29 +57,22 @@
     </header>
 
     <main>
-      <section id="cardContainer">
-        <!-- Karteikarte wird durch script.js generiert -->
-      </section>
+      <section id="learningArea">
+        <div id="cardContainer"></div>
+        <div id="cardCounter"></div>
+        <div id="feedback" class="feedback"></div>
 
-      <section id="optionsContainer">
-        <h3>Bausteine</h3>
-        <div id="optionsList">
-          <!-- Drag-/Tap-Bausteine für Einfach/Mittel -->
+        <div class="controls">
+          <button id="checkBtn">Überprüfen</button>
+          <button id="nextBtn">Nächste Karte</button>
         </div>
       </section>
-    </main>
 
-    <footer>
-      <div id="cardCounter"></div>
-      <div id="feedback"></div>
-      <div class="nav-buttons">
-        <button id="checkBtn">Prüfen</button>
-        <button id="nextBtn">Weiter</button>
-      </div>
-      <p class="small">
-        Lehrkräfte: <a href="edit.html">Karteikarten bearbeiten</a>
-      </p>
-    </footer>
+      <aside id="optionsArea">
+        <h3>Antwortmöglichkeiten</h3>
+        <div id="optionsList" class="options-list"></div>
+      </aside>
+    </main>
   </div>
 
   <script src="script.js"></script>
