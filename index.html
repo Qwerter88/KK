@@ -8,40 +8,67 @@
 </head>
 <body>
 
-  <!-- Start-/Willkommensbereich -->
+  <!-- Landing-Page -->
   <div id="landing">
-    <h1>Pflanzen-Lernkarten</h1>
-    <p>Wähle eine Schwierigkeitsstufe, um zu starten:</p>
+    <div class="landing-inner">
+      <h1>Pflanzen-Lernkarten</h1>
+      <p class="landing-subtitle">
+        Wähle eine Schwierigkeitsstufe, um mit dem Lernen zu beginnen.
+      </p>
 
-    <div class="mode-grid">
-      <button
-        class="mode-btn"
-        data-mode="einfach"
-        onclick="window.startMode && window.startMode('einfach')">
-        Einfach
-      </button>
-      <button
-        class="mode-btn"
-        data-mode="mittel"
-        onclick="window.startMode && window.startMode('mittel')">
-        Mittel
-      </button>
-      <button
-        class="mode-btn"
-        data-mode="schwer"
-        onclick="window.startMode && window.startMode('schwer')">
-        Schwer
-      </button>
-      <button
-        class="mode-btn"
-        data-mode="custom"
-        onclick="window.startMode && window.startMode('custom')">
-        Eigenes Lernen
-      </button>
+      <div class="mode-grid">
+        <div class="mode-card">
+          <button
+            class="mode-btn"
+            data-mode="einfach"
+            onclick="window.startMode && window.startMode('einfach')">
+            Einfach
+          </button>
+          <p class="mode-desc">
+            Vorgaben mit Bausteinen, ideal zum Einstieg.
+          </p>
+        </div>
+
+        <div class="mode-card">
+          <button
+            class="mode-btn"
+            data-mode="mittel"
+            onclick="window.startMode && window.startMode('mittel')">
+            Mittel
+          </button>
+          <p class="mode-desc">
+            Mehr Bausteine, etwas freier, mittlerer Schwierigkeitsgrad.
+          </p>
+        </div>
+
+        <div class="mode-card">
+          <button
+            class="mode-btn"
+            data-mode="schwer"
+            onclick="window.startMode && window.startMode('schwer')">
+            Schwer
+          </button>
+          <p class="mode-desc">
+            Freitext ohne Vorgaben, zur Prüfungsvorbereitung.
+          </p>
+        </div>
+
+        <div class="mode-card">
+          <button
+            class="mode-btn"
+            data-mode="custom"
+            onclick="window.startMode && window.startMode('custom')">
+            Eigenes Lernen
+          </button>
+          <p class="mode-desc">
+            Noch wie „Einfach“, später für eigene Kartensets.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Lernbereich -->
+  <!-- Quiz-App -->
   <div id="app" class="hidden">
     <header>
       <h2>Pflanzen-Lernkarten – Kartenset</h2>
@@ -61,14 +88,13 @@
         <div id="cardContainer"></div>
         <div id="cardCounter"></div>
         <div id="feedback" class="feedback"></div>
-
-        <div class="controls">
+        <div class="nav-buttons">
           <button id="checkBtn">Überprüfen</button>
           <button id="nextBtn">Nächste Karte</button>
         </div>
       </section>
 
-      <aside id="optionsArea">
+      <aside id="optionsContainer">
         <h3>Antwortmöglichkeiten</h3>
         <div id="optionsList" class="options-list"></div>
       </aside>
