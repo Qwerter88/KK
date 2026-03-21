@@ -81,7 +81,7 @@ body {
 /* App anfangs verstecken */
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 header {
