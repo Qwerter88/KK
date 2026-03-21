@@ -1248,9 +1248,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =============== Drag & Drop ===============
 
-  function setupDragDrop(card, level) {
+    function setupDragDrop(card, level) {
     const dropzones = Array.from(document.querySelectorAll(".dropzone"));
     const optionsList = document.getElementById("optionsList");
+
+    // Erkennen, ob Touch-Gerät (Handy/Tablet)
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
     let options = [];
 
@@ -1299,7 +1302,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const pool = shuffleArray(otherByGroup[groupName] || []);
         const correctLower = (correctArray || []).map(t => t.toLowerCase());
         let count = 0;
-        const needed = (correctArray || []).length; // 1:1
+        const needed = (correctArray || []).length; // 1:1 Verhältnis
         for (let i = 0; i < pool.length && count < needed; i++) {
           const txt = pool[i];
           if (!correctLower.includes(txt.toLowerCase())) {
@@ -1319,7 +1322,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const shuffledOptions = shuffleArray(options);
 
-    function createOptionElement(opt) {
+    // ---------- Desktop: klassisches Drag & Drop ----------
+
+    function createOptionElementDesktop(opt) {
       const el = document.createElement("div");
       el.className = "option-item";
       el.textContent = opt.text;
@@ -1328,10 +1333,6 @@ document.addEventListener("DOMContentLoaded", () => {
       addDragHandlers(el);
       return el;
     }
-
-    shuffledOptions.forEach(opt => {
-      optionsList.appendChild(createOptionElement(opt));
-    });
 
     function addDragHandlers(elem) {
       elem.addEventListener("dragstart", (e) => {
@@ -1346,58 +1347,122 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    dropzones.forEach(zone => {
-      zone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        zone.classList.add("over");
+    // ---------- Touch: Tippen zum Einfügen ----------
+
+    let selectedOption = null; // aktuell ausgewählter Baustein (Element)
+
+    function createOptionElementTouch(opt) {
+      const el = document.createElement("div");
+      el.className = "option-item";
+      el.textContent = opt.text;
+      el.dataset.group = opt.group || "";
+      el.addEventListener("click", () => {
+        // Auswahl umschalten
+        if (selectedOption === el) {
+          el.classList.remove("selected");
+          selectedOption = null;
+        } else {
+          if (selectedOption) selectedOption.classList.remove("selected");
+          selectedOption = el;
+          el.classList.add("selected");
+        }
       });
-      zone.addEventListener("dragleave", () => {
-        zone.classList.remove("over");
+      return el;
+    }
+
+    function setupDropzonesTouch() {
+      dropzones.forEach(zone => {
+        zone.addEventListener("click", () => {
+          // Fall 1: Klick auf belegte Zone -> Baustein zurück nach rechts
+          const existing = zone.querySelector(".option-item");
+          if (!selectedOption && existing) {
+            optionsList.appendChild(existing);
+            zone.innerHTML = "";
+            zone.classList.remove("correct", "incorrect");
+            delete zone.dataset.chosenGroup;
+            return;
+          }
+
+          // Fall 2: ausgewählter Baustein + leere Zone
+          if (selectedOption && !existing) {
+            zone.innerHTML = "";
+            zone.appendChild(selectedOption);
+            zone.dataset.chosenGroup = selectedOption.dataset.group || "";
+            selectedOption.classList.remove("selected");
+            selectedOption = null;
+          }
+        });
       });
-      zone.addEventListener("drop", (e) => {
+    }
+
+    // ---------- Gemeinsame Initialisierung ----------
+
+    // Optionsliste füllen – je nach Gerät mit Drag oder Click-Logik
+    if (isTouch) {
+      shuffledOptions.forEach(opt => {
+        optionsList.appendChild(createOptionElementTouch(opt));
+      });
+      setupDropzonesTouch();
+    } else {
+      shuffledOptions.forEach(opt => {
+        optionsList.appendChild(createOptionElementDesktop(opt));
+      });
+
+      // Desktop-Dropzonen
+      dropzones.forEach(zone => {
+        zone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          zone.classList.add("over");
+        });
+        zone.addEventListener("dragleave", () => {
+          zone.classList.remove("over");
+        });
+        zone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          zone.classList.remove("over");
+
+          const dragging = document.querySelector(".option-item.dragging");
+          if (!dragging) return;
+
+          const existing = zone.querySelector(".option-item");
+          if (existing && existing !== dragging) {
+            optionsList.appendChild(existing);
+          }
+
+          zone.innerHTML = "";
+          zone.appendChild(dragging);
+          dragging.classList.remove("dragging");
+
+          zone.dataset.chosenGroup = dragging.dataset.group || "";
+        });
+      });
+
+      // Desktop: Optionenbereich als Dropziel
+      optionsList.addEventListener("dragover", (e) => {
         e.preventDefault();
-        zone.classList.remove("over");
+        optionsList.classList.add("over");
+      });
+      optionsList.addEventListener("dragleave", () => {
+        optionsList.classList.remove("over");
+      });
+      optionsList.addEventListener("drop", (e) => {
+        e.preventDefault();
+        optionsList.classList.remove("over");
 
         const dragging = document.querySelector(".option-item.dragging");
         if (!dragging) return;
 
-        const existing = zone.querySelector(".option-item");
-        if (existing && existing !== dragging) {
-          optionsList.appendChild(existing);
+        const parent = dragging.parentElement;
+        if (parent && parent.classList.contains("dropzone")) {
+          parent.innerHTML = "";
+          parent.classList.remove("correct", "incorrect");
+          delete parent.dataset.chosenGroup;
         }
 
-        zone.innerHTML = "";
-        zone.appendChild(dragging);
+        optionsList.appendChild(dragging);
         dragging.classList.remove("dragging");
-
-        zone.dataset.chosenGroup = dragging.dataset.group || "";
       });
-    });
-
-    optionsList.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      optionsList.classList.add("over");
-    });
-    optionsList.addEventListener("dragleave", () => {
-      optionsList.classList.remove("over");
-    });
-    optionsList.addEventListener("drop", (e) => {
-      e.preventDefault();
-      optionsList.classList.remove("over");
-
-      const dragging = document.querySelector(".option-item.dragging");
-      if (!dragging) return;
-
-      const parent = dragging.parentElement;
-      if (parent && parent.classList.contains("dropzone")) {
-        parent.innerHTML = "";
-        parent.classList.remove("correct", "incorrect");
-        delete parent.dataset.chosenGroup;
-      }
-
-      optionsList.appendChild(dragging);
-      dragging.classList.remove("dragging");
-    });
+    }
   }
 
   // =============== Prüfung ===============
