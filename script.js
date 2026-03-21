@@ -1095,6 +1095,10 @@ function getLevelCards(level) {
 // ===================
 
 document.addEventListener("DOMContentLoaded", () => {
+  const landing = document.getElementById("landing");
+  const app = document.getElementById("app");
+  const modeButtons = document.querySelectorAll(".mode-btn");
+
   const cardContainer = document.getElementById("cardContainer");
   const levelSelect = document.getElementById("levelSelect");
   const checkBtn = document.getElementById("checkBtn");
@@ -1103,7 +1107,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedback = document.getElementById("feedback");
   const cardCounter = document.getElementById("cardCounter");
 
-  if (!cardContainer || !levelSelect) return; // wir sind auf edit.html
+  // Auf edit.html gibt es weder landing noch app – dann hier nichts tun
+  if (!landing && !app) return;
+
+  // Funktion, um Lernmodus zu starten
+  function startMode(mode) {
+    if (landing) landing.classList.add("hidden");
+    if (app) app.classList.remove("hidden");
+
+    if (!levelSelect || !cardContainer) return;
+
+    if (mode === "einfach" || mode === "mittel" || mode === "schwer") {
+      levelSelect.value = mode;
+      currentLevel = mode;
+    } else {
+      // "Eigenes Lernen" – vorerst Standard auf "einfach"
+      levelSelect.value = "einfach";
+      currentLevel = "einfach";
+    }
+
+    initLevel(); // vorhandene Funktion zum Initialisieren der Karten
+  }
+
+  // Klick-Events für die Buttons auf der Startseite
+  modeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.mode;
+      startMode(mode);
+    });
+  });
+
+  // Wenn Seite direkt ohne Landing genutzt werden soll (Fallback),
+  // kannst du optional app sofort starten. Wir lassen es über Landing laufen.
+  if (app && landing && !landing.classList.contains("hidden")) {
+    // Noch nichts tun, bis ein Button gewählt wird
+  }
 
   function clearFeedback() {
     if (!feedback) return;
