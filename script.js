@@ -1089,7 +1089,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const app = document.getElementById("app");
   const modeButtons = document.querySelectorAll(".mode-btn");
 
-console.log("Mode-Buttons gefunden:", modeButtons.length);
+  console.log("Mode-Buttons gefunden:", modeButtons.length);
 
   const cardContainer = document.getElementById("cardContainer");
   const levelSelect = document.getElementById("levelSelect");
@@ -1268,9 +1268,6 @@ console.log("Mode-Buttons gefunden:", modeButtons.length);
 
     initLevel();
   }
-
-  // jetzt global machen, aber außerhalb der Funktion
-  window.startMode = startMode;
 
   function checkAnswers() {
     const card = getCurrentCard();
@@ -1463,6 +1460,9 @@ console.log("Mode-Buttons gefunden:", modeButtons.length);
   if (checkBtn) checkBtn.addEventListener("click", checkAnswers);
   if (nextBtn) nextBtn.addEventListener("click", nextCard);
   if (restartBtn) restartBtn.addEventListener("click", initLevel);
+
+  // jetzt global machen, aber außerhalb der Funktion
+  window.startMode = startMode;
 });
 
 // =============== Drag & Drop + Touch ===============
@@ -1472,9 +1472,9 @@ function setupDragDrop(card, level) {
   const optionsList = document.getElementById("optionsList");
 
   const isTouch =
-    "ontouchstart" in window ||
-    navigator.maxTouchPoints > 0 ||
-    navigator.msMaxTouchPoints > 0; [web:199][web:201]
+  "ontouchstart" in window ||
+  navigator.maxTouchPoints > 0 ||
+  navigator.msMaxTouchPoints > 0;
 
   let options = [];
 
