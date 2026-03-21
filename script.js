@@ -1115,6 +1115,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (landing) landing.classList.add("hidden");
     if (app) app.classList.remove("hidden");
 
+    window.scrollTo(0, 0); // NEU: nach oben scrollen
+
     if (!levelSelect || !cardContainer) return;
 
     if (mode === "einfach" || mode === "mittel" || mode === "schwer") {
