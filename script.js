@@ -1089,6 +1089,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const app = document.getElementById("app");
   const modeButtons = document.querySelectorAll(".mode-btn");
 
+console.log("Mode-Buttons gefunden:", modeButtons.length);
+
   const cardContainer = document.getElementById("cardContainer");
   const levelSelect = document.getElementById("levelSelect");
   const checkBtn = document.getElementById("checkBtn");
@@ -1263,6 +1265,8 @@ document.addEventListener("DOMContentLoaded", () => {
       levelSelect.value = "einfach";
       currentLevel = "einfach";
     }
+
+window.startMode = startMode;
 
     initLevel();
   }
