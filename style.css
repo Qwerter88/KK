@@ -292,3 +292,8 @@ a {
     flex: 1 1 100%;
   }
 }
+
+.option-item.selected {
+  outline: 2px solid #3f6f3f;
+  background-color: #cfe6cf;
+}
