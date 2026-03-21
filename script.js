@@ -1,8 +1,8 @@
 // ===================
-// Lernkarten-Daten (Kartenset)
+// Lernkarten-Daten (Kartenset) – Basisdaten
 // ===================
 
-const cards = [
+const baseCards = [
   {
     id: "thymian",
     germanName: "Thymian",
@@ -804,14 +804,15 @@ const cards = [
     wirkung: [
       "adstringierend",
       "desinfizierend",
-      "desodorierend"
+      "desodorierend: vertreibt schlechte Gerüche"
     ],
     anwendung: [
       "Entzündungen von Zahnfleisch",
       "Entzündungen der Mundschleimhaut"
     ],
     warnhinweise: [
-      "Tinctura Myrrhae"
+      "Tinctura Myrrhae",
+      "getrockneter Milchsaft des Myrrhenbaums"
     ]
   },
   {
@@ -1059,12 +1060,43 @@ const cards = [
 ];
 
 // ===================
+// Karten + LocalStorage
+// ===================
+
+function loadCardsFromLocal() {
+  const raw = localStorage.getItem("customCards_v1");
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr;
+  } catch {
+    return [];
+  }
+}
+
+function saveCardsToLocal(allCards) {
+  localStorage.setItem("customCards_v1", JSON.stringify(allCards));
+}
+
+let cards = (() => {
+  const local = loadCardsFromLocal();
+  if (!local.length) return baseCards.slice();
+  const map = new Map(baseCards.map(c => [c.id, c]));
+  local.forEach(c => map.set(c.id, c));
+  return Array.from(map.values());
+})();
+
+// ===================
 // Gemeinsame Variablen
 // ===================
 
 let currentLevel = "einfach";
 let currentIndex = 0;
 let shuffledIndices = [];
+
+let fromSearchMode = false;
+let searchCardId = null;
 
 // Utility: Array mischen
 function shuffleArray(arr) {
@@ -1077,7 +1109,7 @@ function shuffleArray(arr) {
 }
 
 function getLevelCards(level) {
-  return cards.filter(c => c.levels.includes(level));
+  return cards.filter(c => c.levels && c.levels.includes(level));
 }
 
 // ===================
@@ -1088,16 +1120,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const landing = document.getElementById("landing");
   const app = document.getElementById("app");
   const modeButtons = document.querySelectorAll(".mode-btn");
-
-  console.log("Mode-Buttons gefunden:", modeButtons.length);
+  const teacherLoginBtn = document.getElementById("teacherLoginBtn");
 
   const cardContainer = document.getElementById("cardContainer");
   const levelSelect = document.getElementById("levelSelect");
   const checkBtn = document.getElementById("checkBtn");
   const nextBtn = document.getElementById("nextBtn");
   const restartBtn = document.getElementById("restartBtn");
+  const backToLandingBtn = document.getElementById("backToLandingBtn");
+  const backToSearchBtn = document.getElementById("backToSearchBtn");
   const feedback = document.getElementById("feedback");
   const cardCounter = document.getElementById("cardCounter");
+  const optionsContainer = document.getElementById("optionsContainer");
+
+  const quizMain = document.getElementById("quizMain");
+  const customMain = document.getElementById("customMain");
+  const appTitle = document.getElementById("appTitle");
+  const quizTopBar = document.getElementById("quizTopBar");
+  const customSearchInput = document.getElementById("customSearchInput");
+  const customSearchBtn = document.getElementById("customSearchBtn");
+  const customSearchResults = document.getElementById("customSearchResults");
+  const customBackBtn = document.getElementById("customBackBtn");
+
+  // Lehrerzugang
+  if (teacherLoginBtn) {
+    teacherLoginBtn.addEventListener("click", () => {
+      const pw = window.prompt("Passwort für Lehrerbereich eingeben:");
+      if (!pw) return;
+      if (pw === "Thymian01") {
+        window.location.href = "edit.html";
+      } else {
+        alert("Falsches Passwort.");
+      }
+    });
+  }
 
   // auf edit.html gibt es landing/app nicht
   if (!landing && !app) return;
@@ -1193,16 +1249,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (key === "anwendung") values = card.anwendung || [];
       if (key === "warnhinweise") values = card.warnhinweise || [];
 
+      const cleaned = values.map(v => (v || "").trim()).filter(Boolean);
+
       let html = `<div class="cell">
         <h3>${title}</h3>`;
 
       if (isFree) {
-        values.forEach((_, index) => {
+        cleaned.forEach((_, index) => {
           const dataKey = `${key}_${index}`;
           html += `<input class="input-field" type="text" data-key="${dataKey}" placeholder="Antwort eingeben...">`;
         });
       } else {
-        values.forEach((_, index) => {
+        cleaned.forEach((_, index) => {
           const dataKey = `${key}_${index}`;
           html += `<div class="dropzone" data-key="${dataKey}" data-group="${key}"></div>`;
         });
@@ -1233,27 +1291,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderCurrentCard() {
     clearFeedback();
+    if (nextBtn) nextBtn.disabled = true;
+
     const optionsList = document.getElementById("optionsList");
     if (optionsList) optionsList.innerHTML = "";
 
     const card = getCurrentCard();
     if (!card) {
       cardContainer.innerHTML = "<p>Keine Karten für diese Stufe vorhanden.</p>";
+      if (optionsContainer) optionsContainer.classList.add("hidden");
       return;
     }
 
     cardContainer.innerHTML = buildCardHTML(card, currentLevel);
     updateCounter();
+
+    if (optionsContainer) {
+      if (currentLevel === "schwer") {
+        optionsContainer.classList.add("hidden");
+      } else {
+        optionsContainer.classList.remove("hidden");
+      }
+    }
+
     if (currentLevel === "einfach" || currentLevel === "mittel") {
       setupDragDrop(card, currentLevel);
     }
   }
 
+  function setBodyLevelClass() {
+    document.body.classList.remove("level-einfach", "level-mittel", "level-schwer");
+    document.body.classList.add("level-" + currentLevel);
+  }
+
+  function showQuizLayout() {
+    if (quizMain) quizMain.classList.remove("hidden");
+    if (customMain) customMain.classList.add("hidden");
+    if (quizTopBar) quizTopBar.classList.remove("hidden");
+    if (appTitle) appTitle.textContent = "Pflanzen-Lernkarten – Kartenset";
+  }
+
+  function showCustomLayout() {
+    if (quizMain) quizMain.classList.add("hidden");
+    if (customMain) customMain.classList.remove("hidden");
+    if (quizTopBar) quizTopBar.classList.add("hidden");
+    if (appTitle) appTitle.textContent = "Eigenes Lernen – Suchfunktion";
+  }
+
   function startMode(mode) {
+    fromSearchMode = false;
+    searchCardId = null;
+
     if (landing) landing.classList.add("hidden");
     if (app) app.classList.remove("hidden");
-
     window.scrollTo(0, 0);
+
+    if (mode === "custom") {
+      showCustomLayout();
+      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.classList.remove("hidden");
+      return;
+    }
+
+    showQuizLayout();
+    if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+    if (nextBtn) {
+      nextBtn.classList.remove("hidden");
+      nextBtn.disabled = true;
+    }
 
     if (!levelSelect || !cardContainer) return;
 
@@ -1261,34 +1366,37 @@ document.addEventListener("DOMContentLoaded", () => {
       levelSelect.value = mode;
       currentLevel = mode;
     } else {
-      // Eigenes Lernen – vorerst wie „einfach“
       levelSelect.value = "einfach";
       currentLevel = "einfach";
     }
 
+    setBodyLevelClass();
     initLevel();
   }
+
+  window.startMode = startMode;
 
   function checkAnswers() {
     const card = getCurrentCard();
     if (!card) return;
     clearFeedback();
 
+    let allCorrect = true;
+
     if (currentLevel === "schwer") {
       const inputs = Array.from(document.querySelectorAll(".input-field"));
-      let allCorrect = true;
 
       const expectedGroups = {
         drogen_full: [`${card.drogenParts[0]} – ${card.drogenParts[1]} ${card.drogenParts[2]}`],
         familie_full: [`${card.familieParts[0]} - ${card.familieParts[1]}`],
-        inhaltsstoffe: card.inhaltsstoffe || [],
-        wirkung: card.wirkung || [],
-        anwendung: card.anwendung || [],
-        warnhinweise: card.warnhinweise || []
+        inhaltsstoffe: (card.inhaltsstoffe || []).filter(Boolean),
+        wirkung: (card.wirkung || []).filter(Boolean),
+        anwendung: (card.anwendung || []).filter(Boolean),
+        warnhinweise: (card.warnhinweise || []).filter(Boolean)
       };
 
       inputs.forEach(input => {
-        const key = input.dataset.key;
+        const key = input.dataset.key || "";
         const group =
           key.includes("drogen") ? "drogen_full" :
           key.includes("familie") ? "familie_full" :
@@ -1318,15 +1426,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else {
       const dropzones = Array.from(document.querySelectorAll(".dropzone"));
-      let allCorrect = true;
 
       const expectedGroups = {
-        drogen: (card.drogenParts || []).map(t => t.trim().toLowerCase()),
-        familie: (card.familieParts || []).map(t => t.trim().toLowerCase()),
-        inhaltsstoffe: (card.inhaltsstoffe || []).map(t => t.trim().toLowerCase()),
-        wirkung: (card.wirkung || []).map(t => t.trim().toLowerCase()),
-        anwendung: (card.anwendung || []).map(t => t.trim().toLowerCase()),
-        warnhinweise: (card.warnhinweise || []).map(t => t.trim().toLowerCase())
+        drogen: (card.drogenParts || []).map(t => t.trim().toLowerCase()).filter(Boolean),
+        familie: (card.familieParts || []).map(t => t.trim().toLowerCase()).filter(Boolean),
+        inhaltsstoffe: (card.inhaltsstoffe || []).map(t => t.trim().toLowerCase()).filter(Boolean),
+        wirkung: (card.wirkung || []).map(t => t.trim().toLowerCase()).filter(Boolean),
+        anwendung: (card.anwendung || []).map(t => t.trim().toLowerCase()).filter(Boolean),
+        warnhinweise: (card.warnhinweise || []).map(t => t.trim().toLowerCase()).filter(Boolean)
       };
 
       const givenGroups = {
@@ -1366,8 +1473,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       Object.keys(expectedGroups).forEach(group => {
-        const expected = expectedGroups[group].filter(t => t !== "");
-        const given = givenGroups[group].filter(t => t !== "");
+        const expected = expectedGroups[group];
+        const given = givenGroups[group];
         if (given.length !== expected.length) {
           allCorrect = false;
         } else {
@@ -1388,6 +1495,10 @@ document.addEventListener("DOMContentLoaded", () => {
           feedback.className = "feedback-error";
         }
       }
+    }
+
+    if (nextBtn && !fromSearchMode) {
+      nextBtn.disabled = !allCorrect;
     }
   }
 
@@ -1440,6 +1551,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function nextCard() {
+    if (fromSearchMode) return; // im Such-Single-Card-Modus keine nächste Karte
+
     const levelCards = getLevelCards(currentLevel);
     if (levelCards.length === 0) return;
 
@@ -1451,18 +1564,182 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Custom-Suche: exakt wortgleiche, case-insensitive Suche
+  function runCustomSearch() {
+    if (!customSearchInput || !customSearchResults) return;
+    const termRaw = customSearchInput.value.trim();
+    if (!termRaw) {
+      customSearchResults.innerHTML = "<p>Bitte ein Suchwort eingeben.</p>";
+      return;
+    }
+    const term = termRaw.toLowerCase();
+
+    const matches = new Map();
+
+    cards.forEach(card => {
+      const fields = [];
+
+      fields.push(card.germanName || "");
+      (card.drogenParts || []).forEach(t => fields.push(t || ""));
+      fields.push(card.stammpflanze1 || "");
+      (card.familieParts || []).forEach(t => fields.push(t || ""));
+      (card.inhaltsstoffe || []).forEach(t => fields.push(t || ""));
+      (card.wirkung || []).forEach(t => fields.push(t || ""));
+      (card.anwendung || []).forEach(t => fields.push(t || ""));
+      (card.warnhinweise || []).forEach(t => fields.push(t || ""));
+
+      const hasMatch = fields.some(txt => {
+        const clean = (txt || "").trim().toLowerCase();
+        return clean === term;
+      });
+
+      if (hasMatch) {
+        const displayName = card.germanName || card.id;
+        matches.set(displayName, card.id);
+      }
+    });
+
+    const arr = Array.from(matches.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0], "de")
+    );
+
+    if (!arr.length) {
+      customSearchResults.innerHTML = `<p>Keine Treffer für „${termRaw}“ gefunden.</p>`;
+      return;
+    }
+
+    const items = arr.map(([displayName, id]) =>
+      `<li><button class="custom-result-btn" data-card-id="${id}">${displayName}</button></li>`
+    ).join("");
+
+    customSearchResults.innerHTML = `
+      <p>Treffer (${arr.length}):</p>
+      <ul class="custom-results-list">
+        ${items}
+      </ul>
+    `;
+
+    customSearchResults.querySelectorAll(".custom-result-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cardId = btn.dataset.cardId;
+        openSingleCardQuizFromSearch(cardId);
+      });
+    });
+  }
+
+  function openSingleCardQuizFromSearch(cardId) {
+    fromSearchMode = true;
+    searchCardId = cardId;
+    currentLevel = "mittel";
+    if (levelSelect) levelSelect.value = "mittel";
+
+    if (landing) landing.classList.add("hidden");
+    if (app) app.classList.remove("hidden");
+
+    if (quizMain) quizMain.classList.remove("hidden");
+    if (customMain) customMain.classList.add("hidden");
+    if (quizTopBar) quizTopBar.classList.remove("hidden");
+    if (appTitle) appTitle.textContent = "Lernkarte – " + cardId;
+
+    if (backToSearchBtn) backToSearchBtn.classList.remove("hidden");
+    if (nextBtn) {
+      nextBtn.classList.add("hidden");
+      nextBtn.disabled = true;
+    }
+
+    setBodyLevelClass();
+
+    const levelCards = getLevelCards(currentLevel);
+    let idx = levelCards.findIndex(c => c.id === cardId);
+    if (idx === -1) {
+      idx = 0;
+    }
+
+    shuffledIndices = [idx];
+    currentIndex = 0;
+    renderCurrentCard();
+  }
+
+  window.openSingleCardQuizFromSearch = openSingleCardQuizFromSearch;
+
   if (levelSelect) {
     levelSelect.addEventListener("change", () => {
+      fromSearchMode = false;
+      searchCardId = null;
+      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+      if (nextBtn) {
+        nextBtn.classList.remove("hidden");
+        nextBtn.disabled = true;
+      }
       currentLevel = levelSelect.value;
+      setBodyLevelClass();
       initLevel();
     });
   }
-  if (checkBtn) checkBtn.addEventListener("click", checkAnswers);
-  if (nextBtn) nextBtn.addEventListener("click", nextCard);
-  if (restartBtn) restartBtn.addEventListener("click", initLevel);
 
-  // jetzt global machen, aber außerhalb der Funktion
-  window.startMode = startMode;
+  if (checkBtn) checkBtn.addEventListener("click", checkAnswers);
+  if (nextBtn) {
+    nextBtn.addEventListener("click", nextCard);
+    nextBtn.disabled = true;
+  }
+
+  if (restartBtn) {
+    restartBtn.addEventListener("click", () => {
+      if (fromSearchMode && searchCardId) {
+        openSingleCardQuizFromSearch(searchCardId);
+      } else {
+        initLevel();
+      }
+    });
+  }
+
+  if (backToLandingBtn) {
+    backToLandingBtn.addEventListener("click", () => {
+      fromSearchMode = false;
+      searchCardId = null;
+      if (app) app.classList.add("hidden");
+      if (landing) landing.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    });
+  }
+
+  if (customSearchBtn) customSearchBtn.addEventListener("click", runCustomSearch);
+  if (customSearchInput) {
+    customSearchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runCustomSearch();
+      }
+    });
+  }
+  if (customBackBtn) {
+    customBackBtn.addEventListener("click", () => {
+      fromSearchMode = false;
+      searchCardId = null;
+      if (app) app.classList.add("hidden");
+      if (landing) landing.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    });
+  }
+
+  if (backToSearchBtn) {
+    backToSearchBtn.addEventListener("click", () => {
+      fromSearchMode = false;
+      searchCardId = null;
+
+      if (quizMain) quizMain.classList.add("hidden");
+      if (customMain) customMain.classList.remove("hidden");
+      if (quizTopBar) quizTopBar.classList.add("hidden");
+      if (appTitle) appTitle.textContent = "Eigenes Lernen – Suchfunktion";
+
+      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+      if (nextBtn) {
+        nextBtn.classList.remove("hidden");
+        nextBtn.disabled = true;
+      }
+      clearFeedback();
+    });
+  }
 });
 
 // =============== Drag & Drop + Touch ===============
@@ -1472,26 +1749,31 @@ function setupDragDrop(card, level) {
   const optionsList = document.getElementById("optionsList");
 
   const isTouch =
-  "ontouchstart" in window ||
-  navigator.maxTouchPoints > 0 ||
-  navigator.msMaxTouchPoints > 0;
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
 
   let options = [];
 
   (card.drogenParts || []).forEach(text => {
-    options.push({ text, group: "drogen", correct: true });
+    const t = (text || "").trim();
+    if (t) options.push({ text: t, group: "drogen", correct: true });
   });
   (card.familieParts || []).forEach(text => {
-    options.push({ text, group: "familie", correct: true });
+    const t = (text || "").trim();
+    if (t) options.push({ text: t, group: "familie", correct: true });
   });
 
   function pushCorrect(arr, groupName) {
-    arr.forEach(text => options.push({ text, group: groupName, correct: true }));
+    (arr || []).forEach(text => {
+      const t = (text || "").trim();
+      if (t) options.push({ text: t, group: groupName, correct: true });
+    });
   }
-  pushCorrect(card.inhaltsstoffe || [], "inhaltsstoffe");
-  pushCorrect(card.wirkung || [], "wirkung");
-  pushCorrect(card.anwendung || [], "anwendung");
-  pushCorrect(card.warnhinweise || [], "warnhinweise");
+  pushCorrect(card.inhaltsstoffe, "inhaltsstoffe");
+  pushCorrect(card.wirkung, "wirkung");
+  pushCorrect(card.anwendung, "anwendung");
+  pushCorrect(card.warnhinweise, "warnhinweise");
 
   if (level === "mittel") {
     const otherCards = cards.filter(c => c.id !== card.id);
@@ -1501,7 +1783,7 @@ function setupDragDrop(card, level) {
       otherCards.forEach(c => {
         const arr = extractor(c) || [];
         arr.forEach(txt => {
-          const t = txt.trim();
+          const t = (txt || "").trim();
           if (t) all.push(t);
         });
       });
@@ -1517,11 +1799,14 @@ function setupDragDrop(card, level) {
       warnhinweise: collectOther(c => c.warnhinweise)
     };
 
-    function addDistractorsFor(groupName, correctArray) {
+    function addDistractorsFor(groupName, correctArrayRaw) {
+      const correctArray = (correctArrayRaw || []).map(t => (t || "").trim()).filter(Boolean);
       const pool = shuffleArray(otherByGroup[groupName] || []);
-      const correctLower = (correctArray || []).map(t => t.toLowerCase());
+      const correctLower = correctArray.map(t => t.toLowerCase());
+
+      const needed = Math.floor(correctArray.length / 2);
+
       let count = 0;
-      const needed = (correctArray || []).length;
       for (let i = 0; i < pool.length && count < needed; i++) {
         const txt = pool[i];
         if (!correctLower.includes(txt.toLowerCase())) {
@@ -1531,12 +1816,12 @@ function setupDragDrop(card, level) {
       }
     }
 
-    addDistractorsFor("drogen", card.drogenParts || []);
-    addDistractorsFor("familie", card.familieParts || []);
-    addDistractorsFor("inhaltsstoffe", card.inhaltsstoffe || []);
-    addDistractorsFor("wirkung", card.wirkung || []);
-    addDistractorsFor("anwendung", card.anwendung || []);
-    addDistractorsFor("warnhinweise", card.warnhinweise || []);
+    addDistractorsFor("drogen", card.drogenParts);
+    addDistractorsFor("familie", card.familieParts);
+    addDistractorsFor("inhaltsstoffe", card.inhaltsstoffe);
+    addDistractorsFor("wirkung", card.wirkung);
+    addDistractorsFor("anwendung", card.anwendung);
+    addDistractorsFor("warnhinweise", card.warnhinweise);
   }
 
   const shuffledOptions = shuffleArray(options);
@@ -1676,72 +1961,125 @@ function setupDragDrop(card, level) {
 // Edit-Funktionen (edit.html)
 // ======================
 
-function generateCardObjectFromForm(form) {
-  const id = form.id.value.trim() || "neue_pflanze";
-  const germanName = form.germanName.value.trim();
-
-  const drogen1 = form.drogen1.value.trim();
-  const drogen2 = form.drogen2.value.trim();
-  const drogen3 = form.drogen3.value.trim();
-  const drogenParts = [drogen1, drogen2, drogen3].filter(Boolean);
-
-  const stammpflanze1 = form.stammpflanze1.value.trim();
-  const familie1 = form.familie1.value.trim();
-  const familie2 = form.familie2.value.trim();
-  const familieParts = [familie1, familie2].filter(Boolean);
-
-  const inhaltsstoffe = form.inhaltsstoffe.value.split("\n").map(l => l.trim()).filter(Boolean);
-  const wirkung = form.wirkung.value.split("\n").map(l => l.trim()).filter(Boolean);
-  const anwendung = form.anwendung.value.split("\n").map(l => l.trim()).filter(Boolean);
-  const warnhinweise = form.warnhinweise.value.split("\n").map(l => l.trim()).filter(Boolean);
-
-  const levels = [];
-  if (form.levelEinfach.checked) levels.push("einfach");
-  if (form.levelMittel.checked) levels.push("mittel");
-  if (form.levelSchwer.checked) levels.push("schwer");
-
-  return {
-    id,
-    germanName,
-    levels,
-    drogenParts,
-    stammpflanze1,
-    familieParts,
-    inhaltsstoffe,
-    wirkung,
-    anwendung,
-    warnhinweise
-  };
-}
-
-function initEditPage() {
-  const editForm = document.getElementById("editForm");
-  const output = document.getElementById("editOutput");
-  if (!editForm || !output) return;
-
-  editForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const obj = generateCardObjectFromForm(editForm);
-    const json = JSON.stringify(obj, null, 2)
-      .replace(/\"([^(\")"]+)\":/g, "$1:");
-    output.textContent =
-`// In script.js im cards-Array ergänzen:
-${json},`;
+function clearEditForm() {
+  const form = document.getElementById("editForm");
+  if (!form) return;
+  form.reset();
+  ["inhaltsstoffe", "wirkung", "anwendung", "warnhinweise"].forEach(cls => {
+    document.querySelectorAll(`input.multi.${cls}`).forEach(inp => inp.value = "");
   });
 }
 
-function checkEditPassword() {
-  const correctHash = "editpw_2026_thymian";
-  const input = window.prompt("Bitte Passwort für Lehrkräfte eingeben:");
-  if (!input) {
-    window.location.href = "index.html";
-    return;
-  }
-  const check = "editpw_2026_" + input.trim().toLowerCase();
-  if (check !== correctHash) {
-    alert("Falsches Passwort.");
-    window.location.href = "index.html";
-  } else {
-    initEditPage();
-  }
+function initEditPage() {
+  const form = document.getElementById("editForm");
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const id = (document.getElementById("cardId").value || "").trim() || "neue_pflanze";
+    const germanName = (document.getElementById("germanName").value || "").trim();
+
+    const drogen1 = (document.getElementById("drogen1").value || "").trim();
+    const drogen2 = (document.getElementById("drogen2").value || "").trim();
+    const drogen3 = (document.getElementById("drogen3").value || "").trim();
+    const drogenParts = [drogen1, drogen2, drogen3].filter(Boolean);
+
+    const stammpflanze1 = (document.getElementById("stammpflanze1").value || "").trim();
+    const familie1 = (document.getElementById("familie1").value || "").trim();
+    const familie2 = (document.getElementById("familie2").value || "").trim();
+    const familieParts = [familie1, familie2].filter(Boolean);
+
+    function collectMulti(cls) {
+      return Array.from(document.querySelectorAll(`input.multi.${cls}`))
+        .map(i => (i.value || "").trim())
+        .filter(Boolean);
+    }
+
+    const inhaltsstoffe = collectMulti("inhaltsstoffe");
+    const wirkung = collectMulti("wirkung");
+    const anwendung = collectMulti("anwendung");
+    const warnhinweise = collectMulti("warnhinweise");
+
+    const levels = [];
+    if (document.getElementById("levelEinfach").checked) levels.push("einfach");
+    if (document.getElementById("levelMittel").checked) levels.push("mittel");
+    if (document.getElementById("levelSchwer").checked) levels.push("schwer");
+
+    const newCard = {
+      id,
+      germanName,
+      levels,
+      drogenParts,
+      stammpflanze1,
+      familieParts,
+      inhaltsstoffe,
+      wirkung,
+      anwendung,
+      warnhinweise
+    };
+
+    const existingIndex = cards.findIndex(c => c.id === id);
+    if (existingIndex >= 0) {
+      cards[existingIndex] = newCard;
+    } else {
+      cards.push(newCard);
+    }
+
+    saveCardsToLocal(cards);
+    alert("Karteikarte gespeichert.");
+  });
 }
+
+function populateExistingCards() {
+  const container = document.getElementById("cardsList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  cards.forEach(card => {
+    const div = document.createElement("div");
+    div.className = "cards-list-item";
+    div.textContent = `${card.germanName} (${card.id})`;
+    div.addEventListener("click", () => {
+      loadCardIntoForm(card);
+    });
+    container.appendChild(div);
+  });
+}
+
+function loadCardIntoForm(card) {
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || "";
+  };
+
+  setVal("cardId", card.id);
+  setVal("germanName", card.germanName);
+  setVal("drogen1", (card.drogenParts || [])[0] || "");
+  setVal("drogen2", (card.drogenParts || [])[1] || "");
+  setVal("drogen3", (card.drogenParts || [])[2] || "");
+  setVal("stammpflanze1", card.stammpflanze1 || "");
+  setVal("familie1", (card.familieParts || [])[0] || "");
+  setVal("familie2", (card.familieParts || [])[1] || "");
+
+  function fillMulti(cls, arr) {
+    const inputs = Array.from(document.querySelectorAll(`input.multi.${cls}`));
+    inputs.forEach((inp, idx) => {
+      inp.value = arr[idx] || "";
+    });
+  }
+
+  fillMulti("inhaltsstoffe", card.inhaltsstoffe || []);
+  fillMulti("wirkung", card.wirkung || []);
+  fillMulti("anwendung", card.anwendung || []);
+  fillMulti("warnhinweise", card.warnhinweise || []);
+
+  const levels = card.levels || [];
+  document.getElementById("levelEinfach").checked = levels.includes("einfach");
+  document.getElementById("levelMittel").checked = levels.includes("mittel");
+  document.getElementById("levelSchwer").checked = levels.includes("schwer");
+}
+
+window.initEditPage = initEditPage;
+window.populateExistingCards = populateExistingCards;
+window.clearEditForm = clearEditForm;

@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Pflanzen-Lernkarten – KK</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Pflanzen-Lernkarten</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Landing-Page -->
+  <!-- Start-Willkommensbereich -->
   <div id="landing">
     <div class="landing-inner">
       <h1>Pflanzen-Lernkarten</h1>
       <p class="landing-subtitle">
-        Wähle eine Schwierigkeitsstufe, um mit dem Lernen zu beginnen.
+        Wähle eine Schwierigkeitsstufe, um zu starten.
       </p>
 
       <div class="mode-grid">
         <div class="mode-card">
           <button
-  class="mode-btn"
-  data-mode="einfach"
-  onclick="console.log('onclick einfach'); window.startMode && window.startMode('einfach')">
-  Einfach
-</button>
-          <p class="mode-desc">
-            Vorgaben mit Bausteinen, ideal zum Einstieg.
-          </p>
+            class="mode-btn"
+            data-mode="einfach"
+            onclick="window.startMode && window.startMode('einfach')">
+            Einfach
+          </button>
+          <p class="mode-desc">Quiz mit richtigen Antwortvorschlägen</p>
         </div>
 
         <div class="mode-card">
@@ -36,9 +34,7 @@
             onclick="window.startMode && window.startMode('mittel')">
             Mittel
           </button>
-          <p class="mode-desc">
-            Mehr Bausteine, etwas freier, mittlerer Schwierigkeitsgrad.
-          </p>
+          <p class="mode-desc">Quiz mit richtigen und falschen Antwortvorschlägen</p>
         </div>
 
         <div class="mode-card">
@@ -48,9 +44,7 @@
             onclick="window.startMode && window.startMode('schwer')">
             Schwer
           </button>
-          <p class="mode-desc">
-            Freitext ohne Vorgaben, zur Prüfungsvorbereitung.
-          </p>
+          <p class="mode-desc">Quiz ohne Antwortvorschläge</p>
         </div>
 
         <div class="mode-card">
@@ -60,44 +54,71 @@
             onclick="window.startMode && window.startMode('custom')">
             Eigenes Lernen
           </button>
-          <p class="mode-desc">
-            Noch wie „Einfach“, später für eigene Kartensets.
-          </p>
+          <p class="mode-desc">Suchfunktion über alle Karteikarten</p>
         </div>
+      </div>
+
+      <div class="teacher-link-wrapper">
+        <button id="teacherLoginBtn" class="teacher-btn">Lehrerzugang</button>
       </div>
     </div>
   </div>
 
-  <!-- Quiz-App -->
+  <!-- Lernbereich -->
   <div id="app" class="hidden">
     <header>
-      <h2>Pflanzen-Lernkarten – Kartenset</h2>
-      <div class="top-bar">
+      <h2 id="appTitle">Pflanzen-Lernkarten – Kartenset</h2>
+      <div class="top-bar" id="quizTopBar">
         <label for="levelSelect">Schwierigkeitsstufe:</label>
         <select id="levelSelect">
           <option value="einfach">Einfach</option>
           <option value="mittel">Mittel</option>
           <option value="schwer">Schwer</option>
         </select>
-        <button id="restartBtn">Neustart</button>
       </div>
     </header>
 
-    <main>
-      <section id="learningArea">
+    <!-- Quiz-Modus -->
+    <main id="quizMain">
+      <section id="cardContainerSection">
         <div id="cardContainer"></div>
-        <div id="cardCounter"></div>
-        <div id="feedback" class="feedback"></div>
-        <div class="nav-buttons">
-          <button id="checkBtn">Überprüfen</button>
-          <button id="nextBtn">Nächste Karte</button>
-        </div>
+
+        <footer>
+          <div id="feedback" class="feedback"></div>
+          <div class="nav-buttons">
+            <button id="checkBtn">Überprüfen</button>
+            <button id="nextBtn">Nächste Karte</button>
+            <button id="restartBtn">Neustart</button>
+            <button id="backToSearchBtn" class="hidden">Zurück zur Suche</button>
+            <button id="backToLandingBtn">Zurück zur Startseite</button>
+          </div>
+          <div id="cardCounter"></div>
+        </footer>
       </section>
 
       <aside id="optionsContainer">
         <h3>Antwortmöglichkeiten</h3>
         <div id="optionsList" class="options-list"></div>
       </aside>
+    </main>
+
+    <!-- Eigenes Lernen -->
+    <main id="customMain" class="hidden">
+      <section class="custom-section">
+        <p><strong>Gib hier deine gewünschte Arzneidroge oder einen Teil der Karteikarte ein.</strong></p>
+        <input
+          type="text"
+          id="customSearchInput"
+          placeholder="z.B. adstringierend, Myrrhe, Bronchien ..."
+        />
+        <button id="customSearchBtn">Suche</button>
+
+        <div id="customSearchResults" class="custom-results"></div>
+
+        <div class="nav-buttons">
+          <button id="customBackBtn">Zurück zur Startseite</button>
+        </div>
+      </section>
     </main>
   </div>
 

@@ -10,7 +10,7 @@ body {
   background-color: #f2f2f2;
 }
 
-/* Landing-Page: Willkommensbildschirm */
+/* Landing-Page */
 
 #landing {
   min-height: 100vh;
@@ -78,6 +78,21 @@ body {
   color: #333;
 }
 
+/* Lehrerzugang */
+
+.teacher-link-wrapper {
+  margin-top: 18px;
+}
+
+.teacher-btn {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background-color: #555;
+  border-radius: 4px;
+  border: none;
+  color: #fff;
+}
+
 /* App anfangs verstecken */
 
 .hidden {
@@ -104,25 +119,42 @@ header h2 {
   flex-wrap: wrap;
 }
 
-/* Hauptbereich Quiz */
+/* Hauptbereiche */
 
 main {
+  padding: 20px;
+}
+
+/* Quiz-Layout */
+
+#quizMain {
   display: flex;
-  flex-wrap: wrap;
-  padding: 10px;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+#cardContainerSection {
+  flex: 0 1 50vw;
+  max-width: 700px;
+  min-width: 400px;
 }
 
 #cardContainer {
-  flex: 2 1 520px;
+  width: 100%;
 }
 
+/* Antwortmöglichkeiten rechts */
+
 #optionsContainer {
-  flex: 1 1 260px;
+  flex: 0 0 auto;
+  max-width: 45%;
   background-color: #ffffff;
   border-radius: 4px;
   padding: 10px;
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  display: inline-block;
 }
 
 #optionsContainer h3 {
@@ -130,18 +162,18 @@ main {
   font-size: 1.1rem;
 }
 
-/* Bausteine-Container rechts, zwei Spalten */
+/* Bausteine */
 
 #optionsList {
-  min-height: 100px;
+  display: inline-grid;
+  grid-auto-flow: row;
+  grid-template-columns: auto auto;
+  gap: 4px;
+  min-height: 0;
   border: 1px dashed #ccc;
   padding: 8px;
   background-color: #fafafa;
   border-radius: 4px;
-
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
 }
 
 #optionsList.over {
@@ -149,14 +181,13 @@ main {
   background-color: #e5f3e5;
 }
 
-/* Baustein-Elemente */
-
 .option-item {
   background-color: #e4efe4;
   padding: 4px 6px;
   border-radius: 4px;
   cursor: grab;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .option-item.dragging {
@@ -168,7 +199,7 @@ main {
   background-color: #cfe6cf;
 }
 
-/* Karteikarten-Layout */
+/* Karteikarte */
 
 .card {
   width: 100%;
@@ -286,6 +317,7 @@ footer {
   display: flex;
   gap: 10px;
   margin-bottom: 5px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -312,10 +344,52 @@ a {
   color: #2e5f9f;
 }
 
-/* Edit-Seite */
+/* Eigenes Lernen – Suchbereich */
+
+.custom-section {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+#customSearchInput {
+  width: 100%;
+  padding: 6px;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+#customSearchResults {
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+
+.custom-results-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.custom-results-list li {
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.custom-result-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0057a8;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* Edit-Seite (für edit.html) */
 
 .edit-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 10px auto;
   padding: 15px;
   background-color: #ffffff;
@@ -326,6 +400,23 @@ a {
 .edit-container h2,
 .edit-container h3 {
   margin-top: 10px;
+}
+
+.edit-tabs {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.edit-tab {
+  padding: 6px 10px;
+  margin-right: 6px;
+  background-color: #ddd;
+  border-radius: 4px;
+}
+
+.edit-tab.active {
+  background-color: #3f6f3f;
+  color: #fff;
 }
 
 .edit-container label {
@@ -340,13 +431,18 @@ a {
 
 .edit-container input[type="text"] {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   padding: 4px;
 }
 
 .edit-container fieldset {
   margin-top: 10px;
   margin-bottom: 10px;
+  border: 1px solid #ccc;
+}
+
+.edit-container legend {
+  padding: 0 4px;
 }
 
 .edit-output {
@@ -358,15 +454,36 @@ a {
   font-size: 0.85rem;
 }
 
-/* Responsives Verhalten */
+.cards-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cards-list-item {
+  flex: 1 1 200px;
+  border: 1px solid #ccc;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f7f7f7;
+}
+
+.cards-list-item:hover {
+  background-color: #e6f0e6;
+}
+
+/* Responsiv */
 
 @media (max-width: 800px) {
-  main {
+  #quizMain {
     flex-direction: column;
   }
 
-  #cardContainer,
+  #cardContainerSection,
   #optionsContainer {
     flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 }
