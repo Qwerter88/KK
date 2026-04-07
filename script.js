@@ -718,7 +718,7 @@ const baseCards = [
     familieParts: ["Lippenblütler", "Lamiaceae"],
     inhaltsstoffe: [
       "Ätherisches Öl",
-      "Lamiaceengerbstoffe",
+      "Gerbstoffe",
       "Bitterstoffe"
     ],
     wirkung: [
@@ -1060,9 +1060,8 @@ const baseCards = [
 ];
 
 // ===================
-// Karten-Array (ohne dauerhafte Lehrer-Speicherung)
+// Karten-Array
 // ===================
-
 let cards = baseCards.slice();
 
 // ===================
@@ -1072,13 +1071,14 @@ let cards = baseCards.slice();
 let currentLevel = "einfach";
 let currentIndex = 0;
 let shuffledIndices = [];
-
 let fromSearchMode = false;
 let searchCardId = null;
+let currentMode = "cards";
 
 // Inhaltsstoff-/Wirkungs-Quiz
 let ingredientQuestions = [];
 let currentIngredientQuestionIndex = 0;
+
 
 // ===================
 // Hilfsfunktionen
@@ -1103,9 +1103,399 @@ function getCurrentCard() {
   return levelCards[shuffledIndices[currentIndex]];
 }
 
+
 // ===================
-// Stilles Prüfen für einfachen Modus (Drag & Drop)
+// DOM-Initialisierung
 // ===================
+
+document.addEventListener("DOMContentLoaded", () => {
+  const landing = document.getElementById("landing");
+  const app = document.getElementById("app");
+  const modeButtons = document.querySelectorAll(".mode-btn");
+  const teacherLoginBtn = document.getElementById("teacherLoginBtn");
+
+  const cardContainer = document.getElementById("cardContainer");
+  const levelSelect = document.getElementById("levelSelect");
+  const checkBtn = document.getElementById("checkBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const backToLandingBtn = document.getElementById("backToLandingBtn");
+  const backToSearchBtn = document.getElementById("backToSearchBtn");
+  const feedback = document.getElementById("feedback");
+  const cardCounter = document.getElementById("cardCounter");
+  const optionsContainer = document.getElementById("optionsContainer");
+  const optionsList = document.getElementById("optionsList");
+
+  const quizMain = document.getElementById("quizMain");
+  const customMain = document.getElementById("customMain");
+  const appTitle = document.getElementById("appTitle");
+  const quizTopBar = document.getElementById("quizTopBar");
+
+  const customSearchInput = document.getElementById("customSearchInput");
+  const customSearchBtn = document.getElementById("customSearchBtn");
+  const customSearchResults = document.getElementById("customSearchResults");
+  const customBackBtn = document.getElementById("customBackBtn");
+
+  if (teacherLoginBtn) {
+    teacherLoginBtn.addEventListener("click", () => {
+      const pw = window.prompt("Passwort für Lehrerbereich eingeben:");
+      if (!pw) return;
+
+      if (pw === "Thymian01") {
+        window.location.href = "edit.html";
+      } else {
+        alert("Falsches Passwort.");
+      }
+    });
+  }
+
+  if (!landing || !app) return;
+
+  modeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.mode;
+      startMode(mode);
+    });
+  });
+
+  function clearFeedback() {
+    feedback.textContent = "";
+    feedback.className = "";
+  }
+
+  function updateCardCounter() {
+    if (currentMode === "ingredient") {
+      if (!ingredientQuestions.length) {
+        cardCounter.textContent = "";
+        return;
+      }
+      cardCounter.textContent = `Frage ${currentIngredientQuestionIndex + 1} von ${ingredientQuestions.length}`;
+      return;
+    }
+
+    const levelCards = getLevelCards(currentLevel);
+    if (!levelCards.length) {
+      cardCounter.textContent = "";
+      return;
+    }
+    cardCounter.textContent = `Karte ${currentIndex + 1} von ${levelCards.length}`;
+  }
+
+  function updateIngredientProgress() {
+    const progress = document.getElementById("ingredientProgress");
+    const progressLabel = document.getElementById("ingredientProgressLabel");
+
+    if (!progress || !progressLabel) return;
+    if (!ingredientQuestions.length) return;
+
+    const current = currentIngredientQuestionIndex + 1;
+    const total = ingredientQuestions.length;
+
+    progress.max = total;
+    progress.value = current;
+    progressLabel.textContent = `Lernfortschritt: ${current} von ${total}`;
+  }
+
+  function showLanding() {
+    landing.classList.remove("hidden");
+    app.classList.add("hidden");
+    clearFeedback();
+  }
+
+  function showApp() {
+    landing.classList.add("hidden");
+    app.classList.remove("hidden");
+    window.scrollTo(0, 0);
+  }
+
+  function showQuizLayout() {
+    quizMain.classList.remove("hidden");
+    customMain.classList.add("hidden");
+    quizTopBar.classList.remove("hidden");
+    appTitle.textContent = "Pflanzen-Lernkarten – Kartenset";
+  }
+
+  function showCustomLayout() {
+    quizMain.classList.add("hidden");
+    customMain.classList.remove("hidden");
+    quizTopBar.classList.add("hidden");
+    appTitle.textContent = "Eigenes Lernen – Suchfunktion";
+  }
+
+  function showIngredientLayout() {
+    quizMain.classList.remove("hidden");
+    customMain.classList.add("hidden");
+    quizTopBar.classList.add("hidden");
+    appTitle.textContent = "Inhaltsstoff-Lernen – Multiple-Choice-Quiz";
+  }
+
+  function resetToLandingState() {
+    fromSearchMode = false;
+    searchCardId = null;
+    currentMode = "cards";
+    currentLevel = "einfach";
+    currentIndex = 0;
+    shuffledIndices = [];
+    ingredientQuestions = [];
+    currentIngredientQuestionIndex = 0;
+
+    if (levelSelect) levelSelect.value = "einfach";
+    if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+    if (nextBtn) {
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = "Nächste Karte";
+      nextBtn.disabled = true;
+    }
+    if (checkBtn) checkBtn.classList.remove("hidden");
+    if (optionsContainer) optionsContainer.classList.remove("hidden");
+    if (optionsList) optionsList.innerHTML = "";
+    if (cardContainer) cardContainer.innerHTML = "";
+    if (cardCounter) cardCounter.textContent = "";
+    clearFeedback();
+  }
+
+
+  // ===================
+  // Karten-Modus
+  // ===================
+
+  function initLevel() {
+    const levelCards = getLevelCards(currentLevel);
+    shuffledIndices = shuffleArray(levelCards.map((_, i) => i));
+    currentIndex = 0;
+    renderCurrentCard();
+  }
+
+  function buildCardHTML(card, level) {
+    const isFree = level === "schwer";
+
+    function makeDrogenBlock() {
+      if (isFree) {
+        return `
+          <div class="cell">
+            <h3>Drogenbezeichnung</h3>
+            <div class="field">
+              <input class="input-field" type="text" data-key="drogenfull" placeholder="z. B. Thymian / Thymi / herba" />
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="cell">
+          <h3>Drogenbezeichnung</h3>
+          <div class="field">
+            <div class="dropzone" data-key="drogenpart0" data-group="drogen"></div>
+            <span> </span>
+            <div class="dropzone" data-key="drogenpart1" data-group="drogen"></div>
+            <span> </span>
+            <div class="dropzone" data-key="drogenpart2" data-group="drogen"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function makeStammpflanzeBlock() {
+      if (isFree) {
+        return `
+          <div class="cell">
+            <h3>Stammpflanze und Familie</h3>
+            <div class="field">${card.stammpflanze1 || ""}</div>
+            <div class="field" style="margin-top:6px;">
+              <input class="input-field" type="text" data-key="familiefull" placeholder="z. B. Lippenblütler - Lamiaceae" />
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="cell">
+          <h3>Stammpflanze und Familie</h3>
+          <div class="field">${card.stammpflanze1 || ""}</div>
+          <div class="field" style="margin-top:6px;">
+            <div class="dropzone" data-key="familiepart0" data-group="familie"></div>
+            <span> - </span>
+            <div class="dropzone" data-key="familiepart1" data-group="familie"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function makeBlock(title, key) {
+      const values = (card[key] || []).filter(Boolean);
+
+      return `
+        <div class="cell">
+          <h3>${title}</h3>
+          ${
+            isFree
+              ? values.map((_, index) => `
+                  <input class="input-field" type="text" data-key="${key}${index}" placeholder="Antwort eingeben..." />
+                `).join("")
+              : values.map((_, index) => `
+                  <div class="dropzone" data-key="${key}${index}" data-group="${key}"></div>
+                `).join("")
+          }
+        </div>
+      `;
+    }
+
+    return `
+      <div class="card">
+        <h2>${card.germanName || ""}</h2>
+
+        <div class="row">
+          ${makeDrogenBlock()}
+          ${makeStammpflanzeBlock()}
+        </div>
+
+        <div class="row">
+          ${makeBlock("Inhaltsstoffe", "inhaltsstoffe")}
+          ${makeBlock("Wirkung", "wirkung")}
+        </div>
+
+        <div class="row">
+          ${makeBlock("Anwendung", "anwendung")}
+          ${makeBlock("Warnhinweise / Zusatzinformation", "warnhinweise")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCurrentCard() {
+    clearFeedback();
+
+    if (nextBtn) nextBtn.disabled = true;
+    if (optionsList) optionsList.innerHTML = "";
+
+    const card = getCurrentCard();
+    if (!card) {
+      cardContainer.innerHTML = "<p>Keine Karten für diese Stufe vorhanden.</p>";
+      if (optionsContainer) optionsContainer.classList.add("hidden");
+      return;
+    }
+
+    cardContainer.innerHTML = buildCardHTML(card, currentLevel);
+    updateCardCounter();
+
+    if (checkBtn) {
+      if (currentLevel === "einfach") {
+        checkBtn.classList.add("hidden");
+      } else {
+        checkBtn.classList.remove("hidden");
+      }
+    }
+
+    if (optionsContainer) {
+      if (currentLevel === "schwer") {
+        optionsContainer.classList.add("hidden");
+      } else {
+        optionsContainer.classList.remove("hidden");
+      }
+    }
+
+    if (currentLevel === "einfach" || currentLevel === "mittel") {
+      setupDragDrop(card, currentLevel);
+    }
+  }
+
+  function buildOptionsFromCard(card) {
+    return shuffleArray([
+      ...(card.drogenParts || []),
+      ...(card.familieParts || []),
+      ...(card.inhaltsstoffe || []),
+      ...(card.wirkung || []),
+      ...(card.anwendung || []),
+      ...(card.warnhinweise || [])
+    ].filter(Boolean));
+  }
+
+  function setupDragDrop(card, level) {
+    const allOptions = buildOptionsFromCard(card);
+    if (!optionsList) return;
+
+    optionsList.innerHTML = "";
+
+    allOptions.forEach(text => {
+      const item = document.createElement("div");
+      item.className = "option-item";
+      item.textContent = text;
+      item.draggable = true;
+
+      item.addEventListener("dragstart", () => {
+        item.classList.add("dragging");
+      });
+
+      item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+      });
+
+      optionsList.appendChild(item);
+    });
+
+    const dropzones = Array.from(document.querySelectorAll(".dropzone"));
+
+    dropzones.forEach(zone => {
+      zone.addEventListener("dragover", e => {
+        e.preventDefault();
+        zone.classList.add("over");
+      });
+
+      zone.addEventListener("dragleave", () => {
+        zone.classList.remove("over");
+      });
+
+      zone.addEventListener("drop", e => {
+        e.preventDefault();
+        zone.classList.remove("over");
+
+        const dragging = document.querySelector(".option-item.dragging");
+        if (!dragging) return;
+
+        const existing = zone.querySelector(".option-item");
+        if (existing) {
+          optionsList.appendChild(existing);
+        }
+
+        zone.appendChild(dragging);
+
+        if (level === "einfach") {
+          const allCorrect = checkAllDropzonesCorrect(card);
+          if (allCorrect && nextBtn) {
+            feedback.textContent = "Richtig! Alle Felder korrekt zugeordnet.";
+            feedback.className = "feedback-ok";
+            nextBtn.disabled = false;
+          } else {
+            clearFeedback();
+            nextBtn.disabled = true;
+          }
+        }
+      });
+    });
+
+    optionsList.addEventListener("dragover", e => {
+      e.preventDefault();
+      optionsList.classList.add("over");
+    });
+
+    optionsList.addEventListener("dragleave", () => {
+      optionsList.classList.remove("over");
+    });
+
+    optionsList.addEventListener("drop", e => {
+      e.preventDefault();
+      optionsList.classList.remove("over");
+
+      const dragging = document.querySelector(".option-item.dragging");
+      if (!dragging) return;
+      optionsList.appendChild(dragging);
+
+      if (level === "einfach") {
+        clearFeedback();
+        nextBtn.disabled = true;
+      }
+    });
+  }
 
 function checkAllDropzonesCorrect(card) {
   const dropzones = Array.from(document.querySelectorAll(".dropzone"));
@@ -1159,588 +1549,58 @@ function checkAllDropzonesCorrect(card) {
   return true;
 }
 
-// ===================
-// DOM-Initialisierung
-// ===================
-
-document.addEventListener("DOMContentLoaded", () => {
-  const landing = document.getElementById("landing");
-  const app = document.getElementById("app");
-  const modeButtons = document.querySelectorAll(".mode-btn");
-  const teacherLoginBtn = document.getElementById("teacherLoginBtn");
-
-  const cardContainer = document.getElementById("cardContainer");
-  const levelSelect = document.getElementById("levelSelect");
-  const checkBtn = document.getElementById("checkBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const restartBtn = document.getElementById("restartBtn");
-  const backToLandingBtn = document.getElementById("backToLandingBtn");
-  const backToSearchBtn = document.getElementById("backToSearchBtn");
-  const feedback = document.getElementById("feedback");
-  const cardCounter = document.getElementById("cardCounter");
-  const optionsContainer = document.getElementById("optionsContainer");
-
-  const quizMain = document.getElementById("quizMain");
-  const customMain = document.getElementById("customMain");
-  const appTitle = document.getElementById("appTitle");
-  const quizTopBar = document.getElementById("quizTopBar");
-  const customSearchInput = document.getElementById("customSearchInput");
-  const customSearchBtn = document.getElementById("customSearchBtn");
-  const customSearchResults = document.getElementById("customSearchResults");
-  const customBackBtn = document.getElementById("customBackBtn");
-
-  // Lehrerlogin wie bisher
-  if (teacherLoginBtn) {
-    teacherLoginBtn.addEventListener("click", () => {
-      const pw = window.prompt("Passwort für Lehrerbereich eingeben:");
-      if (!pw) return;
-      if (pw === "Thymian01") {
-        window.location.href = "edit.html";
-      } else {
-        alert("Falsches Passwort.");
-      }
-    });
-  }
-
-  if (!landing && !app) return;
-
-modeButtons.forEach(btn => {
-  let touchHandled = false;
-
-  const startSelectedMode = (e) => {
-    if (e) {
-      e.preventDefault();
-    }
-
-    const mode = (btn.dataset.mode || "").trim().toLowerCase();
-
-    if (mode === "ingredient") {
-      startMode("ingredient");
-      return;
-    }
-
-    if (mode === "custom") {
-      startMode("custom");
-      return;
-    }
-
-    if (mode === "mittel") {
-      startMode("mittel");
-      return;
-    }
-
-    if (mode === "schwer") {
-      startMode("schwer");
-      return;
-    }
-
-    startMode("einfach");
-  };
-
-  btn.addEventListener("touchend", (e) => {
-    touchHandled = true;
-    startSelectedMode(e);
-
-    window.setTimeout(() => {
-      touchHandled = false;
-    }, 400);
-  }, { passive: false });
-
-  btn.addEventListener("click", (e) => {
-    if (touchHandled) return;
-    startSelectedMode(e);
-  });
-});
-
-  function clearFeedback() {
-    if (!feedback) return;
-    feedback.textContent = "";
-    feedback.className = "";
-  }
-
-  function updateCounter() {
-    if (!cardCounter) return;
-    const levelCards = getLevelCards(currentLevel);
-    if (levelCards.length === 0) {
-      cardCounter.textContent = "";
-      return;
-    }
-    cardCounter.textContent = `Karte ${currentIndex + 1} von ${levelCards.length}`;
-  }
-
-  function initLevel() {
-    const levelCards = getLevelCards(currentLevel);
-    shuffledIndices = shuffleArray(levelCards.map((_, i) => i));
-    currentIndex = 0;
-    renderCurrentCard();
-  }
-
-  function buildCardHTML(card, level) {
-    const isFree = level === "schwer";
-
-    function makeDrogenBlock() {
-      let html = `<div class="cell"><h3>Drogenbezeichnung</h3><div class="field">`;
-      if (isFree) {
-        html += `<input class="input-field" type="text" data-key="drogen_full" placeholder="z.B. Thymian – Thymi herba">`;
-      } else {
-        html += `
-          <div class="dropzone" data-key="drogen_part_0" data-group="drogen"></div>
-          <span> – </span>
-          <div class="dropzone" data-key="drogen_part_1" data-group="drogen"></div>
-          <span> </span>
-          <div class="dropzone" data-key="drogen_part_2" data-group="drogen"></div>`;
-      }
-      html += `</div></div>`;
-      return html;
-    }
-
-    function makeStammpflanzeBlock() {
-      let html = `<div class="cell"><h3>Stammpflanze und Familie</h3><div class="field">${card.stammpflanze1 || ""}</div>`;
-      if (isFree) {
-        html += `<input class="input-field" type="text" data-key="familie_full" placeholder="z.B. Lippenblütler - Lamiaceae">`;
-      } else {
-        html += `<div class="field">
-          <div class="dropzone" data-key="familie_part_0" data-group="familie"></div>
-          <span> - </span>
-          <div class="dropzone" data-key="familie_part_1" data-group="familie"></div>
-        </div>`;
-      }
-      html += `</div>`;
-      return html;
-    }
-
-    function makeBlock(title, key) {
-      const values = (card[key] || []).map(v => (v || "").trim()).filter(Boolean);
-      let html = `<div class="cell"><h3>${title}</h3>`;
-      if (isFree) {
-        values.forEach((_, index) => {
-          html += `<input class="input-field" type="text" data-key="${key}_${index}" placeholder="Antwort eingeben...">`;
-        });
-      } else {
-        values.forEach((_, index) => {
-          html += `<div class="dropzone" data-key="${key}_${index}" data-group="${key}"></div>`;
-        });
-      }
-      html += `</div>`;
-      return html;
-    }
-
-    return `
-      <div class="card">
-        <div class="row">${makeDrogenBlock()}${makeStammpflanzeBlock()}</div>
-        <div class="row">${makeBlock("Inhaltsstoffe", "inhaltsstoffe")}${makeBlock("Wirkung", "wirkung")}</div>
-        <div class="row">${makeBlock("Anwendung", "anwendung")}${makeBlock("Warnhinweise, Zusatzinformation", "warnhinweise")}</div>
-      </div>`;
-  }
-
-  function renderCurrentCard() {
-    clearFeedback();
-    const optionsList = document.getElementById("optionsList");
-    if (optionsList) optionsList.innerHTML = "";
-    if (nextBtn) nextBtn.disabled = true;
-
-    const card = getCurrentCard();
-    if (!card) {
-      cardContainer.innerHTML = "<p>Keine Karten für diese Stufe vorhanden.</p>";
-      if (optionsContainer) optionsContainer.classList.add("hidden");
-      return;
-    }
-
-    cardContainer.innerHTML = buildCardHTML(card, currentLevel);
-    updateCounter();
-
-    // Check-Button nur bei mittel / schwer anzeigen
-    if (checkBtn) {
-      if (currentLevel === "einfach") {
-        checkBtn.classList.add("hidden");
-      } else {
-        checkBtn.classList.remove("hidden");
-      }
-    }
-
-    if (optionsContainer) {
-      if (currentLevel === "schwer") {
-        optionsContainer.classList.add("hidden");
-      } else {
-        optionsContainer.classList.remove("hidden");
-      }
-    }
-
-    if (currentLevel === "einfach" || currentLevel === "mittel") {
-      setupDragDrop(card, currentLevel);
-    }
-  }
-
-  function setBodyLevelClass() {
-    document.body.classList.remove("level-einfach", "level-mittel", "level-schwer", "mode-ingredient");
-    if (currentLevel === "einfach" || currentLevel === "mittel" || currentLevel === "schwer") {
-      document.body.classList.add("level-" + currentLevel);
-    }
-  }
-
-  function showQuizLayout() {
-    if (quizMain) quizMain.classList.remove("hidden");
-    if (customMain) customMain.classList.add("hidden");
-    if (quizTopBar) quizTopBar.classList.remove("hidden");
-    if (appTitle) appTitle.textContent = "Pflanzen-Lernkarten – Kartenset";
-  }
-
-  function showCustomLayout() {
-    if (quizMain) quizMain.classList.add("hidden");
-    if (customMain) customMain.classList.remove("hidden");
-    if (quizTopBar) quizTopBar.classList.add("hidden");
-    if (appTitle) appTitle.textContent = "Eigenes Lernen – Suchfunktion";
-  }
-
-  function showIngredientLayout() {
-    if (quizMain) quizMain.classList.remove("hidden");
-    if (customMain) customMain.classList.add("hidden");
-    if (quizTopBar) quizTopBar.classList.add("hidden");
-    if (appTitle) appTitle.textContent = "Inhaltsstoff-Lernen – Multiple-Choice-Quiz";
-  }
-
-  // ===================
-  // Inhaltsstoff-/Wirkungs-Quiz: Fragenpool erzeugen
-  // ===================
-
-  function buildIngredientQuestionPool() {
-    const ingredientMap = new Map(); // key: normalisierter Inhaltsstoff → {label, plantIds}
-    const effectMap = new Map(); // key: normalisierte Wirkung → {label, plantIds}
-
-    cards.forEach(card => {
-      const pid = card.id;
-
-      (card.inhaltsstoffe || []).forEach(raw => {
-        const txt = (raw || "").trim();
-        if (!txt) return;
-        const key = txt.toLowerCase();
-        if (!ingredientMap.has(key)) {
-          ingredientMap.set(key, { label: txt, plantIds: new Set() });
-        }
-        ingredientMap.get(key).plantIds.add(pid);
-      });
-
-      (card.wirkung || []).forEach(raw => {
-        const txt = (raw || "").trim();
-        if (!txt) return;
-        const key = txt.toLowerCase();
-        if (!effectMap.has(key)) {
-          effectMap.set(key, { label: txt, plantIds: new Set() });
-        }
-        effectMap.get(key).plantIds.add(pid);
-      });
-    });
-
-    const questions = [];
-
-    ingredientMap.forEach(val => {
-      if (val.plantIds.size >= 1) {
-        questions.push({
-          type: "ingredient",
-          label: val.label,
-          correctPlantIds: Array.from(val.plantIds)
-        });
-      }
-    });
-
-    effectMap.forEach(val => {
-      if (val.plantIds.size >= 1) {
-        questions.push({
-          type: "effect",
-          label: val.label,
-          correctPlantIds: Array.from(val.plantIds)
-        });
-      }
-    });
-
-    ingredientQuestions = shuffleArray(questions);
-    currentIngredientQuestionIndex = 0;
-  }
-
-  function renderIngredientQuestion() {
-    clearFeedback();
-    if (!ingredientQuestions.length) {
-      cardContainer.innerHTML = "<p>Keine Inhaltsstoff-/Wirkungsdaten vorhanden.</p>";
-      if (optionsContainer) optionsContainer.classList.add("hidden");
-      if (cardCounter) cardCounter.textContent = "";
-      if (checkBtn) checkBtn.classList.add("hidden");
-      if (nextBtn) nextBtn.disabled = true;
-      return;
-    }
-
-    const q = ingredientQuestions[currentIngredientQuestionIndex];
-
-    // Frage formulieren
-    const quizTitel = q.type === "ingredient"
-      ? "Inhaltsstoff-Quiz"
-      : "Wirkungs-Quiz";
-
-    const frageText = q.type === "ingredient"
-      ? `Welche Pflanzen haben den Inhaltsstoff „${q.label}“?`
-      : `Welche Pflanzen wirken „${q.label}“?`;
-
-    cardContainer.innerHTML = `
-     <div class="card">
-       <h2>${quizTitel}</h2>
-       <p>${frageText}</p>
-       <div id="ingredientOptions"></div>
-     </div>
-    `;
-
-    if (cardCounter) {
-      cardCounter.textContent = `Frage ${currentIngredientQuestionIndex + 1}`;
-    }
-
-    if (optionsContainer) optionsContainer.classList.add("hidden"); // rechte Bausteinspalte ausblenden
-    if (checkBtn) checkBtn.classList.remove("hidden");
-    if (nextBtn) {
-      nextBtn.textContent = "Nächste Frage";
-      nextBtn.disabled = true;
-    }
-
-    renderIngredientOptions(q);
-  }
-
- function renderIngredientOptions(question) {
-  const container = document.getElementById("ingredientOptions");
-  if (!container) return;
-
-  const correctSet = new Set(question.correctPlantIds);
-  const allPlantIds = cards.map(c => c.id);
-  const wrongCandidates = shuffleArray(allPlantIds.filter(id => !correctSet.has(id)));
-
-  const numCorrect = question.correctPlantIds.length;
-  let numWrong = Math.round(numCorrect * 0.5);
-  if (numWrong < 1 && wrongCandidates.length > 0) numWrong = 1;
-  if (numWrong > wrongCandidates.length) numWrong = wrongCandidates.length;
-
-  const wrongIds = wrongCandidates.slice(0, numWrong);
-
-  const optionIds = shuffleArray([...question.correctPlantIds, ...wrongIds]);
-
-  container.innerHTML = "";
-  optionIds.forEach(pid => {
-    const card = cards.find(c => c.id === pid);
-    const label = card ? (card.germanName || card.id) : pid;
-    const isCorrect = correctSet.has(pid);
-
-    const idAttr = `opt_${pid}_${Math.random().toString(36).slice(2, 8)}`;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "ingredient-option";
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = idAttr;
-    checkbox.dataset.plantId = pid;
-    checkbox.dataset.correct = isCorrect ? "true" : "false";
-
-    const labelEl = document.createElement("label");
-    labelEl.setAttribute("for", idAttr);
-    labelEl.textContent = label;
-
-    wrapper.appendChild(checkbox);
-    wrapper.appendChild(labelEl);
-    container.appendChild(wrapper);
-  });
- }
-
- function checkIngredientQuestion() {
-  if (!ingredientQuestions.length) return;
-  const q = ingredientQuestions[currentIngredientQuestionIndex];
-  const correctSet = new Set(q.correctPlantIds);
-
-  const wrappers = Array.from(document.querySelectorAll("#ingredientOptions .ingredient-option"));
-  const checkboxes = wrappers.map(w => w.querySelector("input[type='checkbox']"));
-
-  let allCorrect = true;
-
-  wrappers.forEach((wrapper, idx) => {
-    const cb = checkboxes[idx];
-    if (!cb) return;
-    const pid = cb.dataset.plantId;
-    const isCorrectPlant = correctSet.has(pid);
-    const isChecked = cb.checked;
-
-    // alte Klassen entfernen
-    wrapper.classList.remove("correct", "incorrect");
-
-    if (isChecked && isCorrectPlant) {
-      // richtig markiert → grün
-      wrapper.classList.add("correct");
-    } else if (isChecked && !isCorrectPlant) {
-      // falsch markiert → rot
-      wrapper.classList.add("incorrect");
-      allCorrect = false;
-    } else if (!isChecked && isCorrectPlant) {
-      // richtige, aber nicht angeklickte Pflanze → Fehler, aber nicht rot
-      allCorrect = false;
-    }
-  });
-
-  if (feedback) {
-    if (allCorrect) {
-      feedback.textContent = "Richtig! Alle passenden Pflanzen ausgewählt.";
-      feedback.className = "feedback-ok";
-    } else {
-      feedback.textContent = "Noch nicht ganz richtig. Überprüfe deine Auswahl.";
-      feedback.className = "feedback-error";
-    }
-  }
-
-  const nextBtn = document.getElementById("nextBtn");
-  if (nextBtn) nextBtn.disabled = !allCorrect;
- }
-
-  function nextIngredientQuestion() {
-    if (!ingredientQuestions.length) return;
-    if (currentIngredientQuestionIndex >= ingredientQuestions.length - 1) {
-      cardContainer.innerHTML = `
-        <div class="card">
-          <h2>Glückwunsch!</h2>
-          <p><strong>Du hast alle Inhaltsstoff-/Wirkungsfragen durchgearbeitet.</strong></p>
-          <p>Du kannst das Quiz jederzeit neu starten.</p>
-          <button id="restartIngredientBtn">Quiz neu starten</button>
-        </div>
-      `;
-      if (feedback) {
-        feedback.textContent = "";
-        feedback.className = "";
-      }
-      if (cardCounter) cardCounter.textContent = "";
-
-      const restartBtnLocal = document.getElementById("restartIngredientBtn");
-      if (restartBtnLocal) {
-        restartBtnLocal.addEventListener("click", () => {
-          buildIngredientQuestionPool();
-          renderIngredientQuestion();
-        });
-      }
-      return;
-    }
-
-    currentIngredientQuestionIndex += 1;
-    renderIngredientQuestion();
-  }
-
-  // ===================
-  // Moduswechsel
-  // ===================
-
-  function startMode(mode) {
-    fromSearchMode = false;
-    searchCardId = null;
-
-    if (landing) landing.classList.add("hidden");
-    if (app) app.classList.remove("hidden");
-    window.scrollTo(0, 0);
-
-    if (mode === "custom") {
-      showCustomLayout();
-      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
-      if (nextBtn) {
-        nextBtn.textContent = "Nächste Karte";
-        nextBtn.classList.remove("hidden");
-        nextBtn.disabled = true;
-      }
-      return;
-    }
-
-    if (mode === "ingredient") {
-      if (quizTopBar) quizTopBar.classList.add("hidden");
-      showIngredientLayout();
-      setBodyLevelClass();
-      buildIngredientQuestionPool();
-      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
-      if (levelSelect) levelSelect.value = "einfach";
-      if (nextBtn) {
-        nextBtn.textContent = "Nächste Frage";
-        nextBtn.disabled = true;
-      }
-      renderIngredientQuestion();
-      window.currentMode = "ingredient";
-      return;
-    }
-
-    // Klassische Karten-Quiz-Modi
-    showQuizLayout();
-    window.currentMode = "cards";
-
-    if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
-    if (nextBtn) {
-      nextBtn.textContent = "Nächste Karte";
-      nextBtn.classList.remove("hidden");
-      nextBtn.disabled = true;
-    }
-
-    if (!levelSelect || !cardContainer) return;
-
-    if (["einfach", "mittel", "schwer"].includes(mode)) {
-      levelSelect.value = mode;
-      currentLevel = mode;
-    } else {
-      levelSelect.value = "einfach";
-      currentLevel = "einfach";
-    }
-
-    setBodyLevelClass();
-    initLevel();
-  }
-
-  window.startMode = startMode;
-
-  // ===================
-  // Klassisches Prüfen (Check-Button)
-  // ===================
-
   function checkAnswers() {
-    if (window.currentMode === "ingredient") {
+    if (currentMode === "ingredient") {
       checkIngredientQuestion();
       return;
     }
 
     const card = getCurrentCard();
     if (!card) return;
-    clearFeedback();
 
+    clearFeedback();
     let allCorrect = true;
 
     if (currentLevel === "schwer") {
       const inputs = Array.from(document.querySelectorAll(".input-field"));
 
       const expectedGroups = {
-        drogen_full: [`${card.drogenParts[0]} – ${card.drogenParts[1]} ${card.drogenParts[2]}`],
-        familie_full: [`${card.familieParts[0]} - ${card.familieParts[1]}`],
-        inhaltsstoffe: (card.inhaltsstoffe || []).filter(Boolean),
-        wirkung: (card.wirkung || []).filter(Boolean),
-        anwendung: (card.anwendung || []).filter(Boolean),
-        warnhinweise: (card.warnhinweise || []).filter(Boolean)
+        drogenfull: [(card.drogenParts || []).join(" ").trim().toLowerCase()],
+        familiefull: [`${(card.familieParts || [])[0] || ""} - ${(card.familieParts || [])[1] || ""}`.trim().toLowerCase()],
+        inhaltsstoffe: (card.inhaltsstoffe || []).map(v => v.trim().toLowerCase()),
+        wirkung: (card.wirkung || []).map(v => v.trim().toLowerCase()),
+        anwendung: (card.anwendung || []).map(v => v.trim().toLowerCase()),
+        warnhinweise: (card.warnhinweise || []).map(v => v.trim().toLowerCase())
       };
 
       inputs.forEach(input => {
-        const key = input.dataset.key || "";
-        const group = key.includes("drogen")
-          ? "drogen_full"
-          : key.includes("familie")
-          ? "familie_full"
-          : key.split("_")[0];
+        input.classList.remove("correct", "incorrect");
 
-        const expectedArr = (expectedGroups[group] || []).map(t => t.trim().toLowerCase());
-        const given = (input.value || "").trim().toLowerCase();
-        if (expectedArr.includes(given) && given !== "") {
-          input.classList.remove("incorrect");
+        const key = input.dataset.key;
+        const given = input.value.trim().toLowerCase();
+
+        let ok = false;
+
+        if (key === "drogenfull") {
+          ok = expectedGroups.drogenfull.includes(given);
+        } else if (key === "familiefull") {
+          ok = expectedGroups.familiefull.includes(given);
+        } else {
+          const baseKey = key.replace(/[0-9]+$/, "");
+          const indexMatch = key.match(/([0-9]+)$/);
+          const idx = indexMatch ? Number(indexMatch[1]) : 0;
+          const expected = (expectedGroups[baseKey] || [])[idx] || "";
+          ok = given === expected;
+        }
+
+        if (ok) {
           input.classList.add("correct");
         } else {
-          input.classList.remove("correct");
           input.classList.add("incorrect");
           allCorrect = false;
         }
       });
 
-      if (feedback) {
-        feedback.textContent = allCorrect ? "Richtig! Gut gemacht." : "Einige Angaben sind noch nicht korrekt.";
-        feedback.className = allCorrect ? "feedback-ok" : "feedback-error";
-      }
     } else {
       const dropzones = Array.from(document.querySelectorAll(".dropzone"));
 
@@ -1753,27 +1613,20 @@ modeButtons.forEach(btn => {
         warnhinweise: (card.warnhinweise || []).map(t => t.trim().toLowerCase()).filter(Boolean)
       };
 
-      const givenGroups = { drogen: [], familie: [], inhaltsstoffe: [], wirkung: [], anwendung: [], warnhinweise: [] };
-
-      dropzones.forEach(zone => {
-        const group = zone.dataset.group;
-        const item = zone.querySelector(".option-item");
-        if (group && item) {
-          const text = (item.textContent || "").trim().toLowerCase();
-          if (text) givenGroups[group].push(text);
-        }
-      });
-
       dropzones.forEach(zone => {
         zone.classList.remove("correct", "incorrect");
+
         const group = zone.dataset.group;
         const item = zone.querySelector(".option-item");
+
         if (!group || !item) {
           allCorrect = false;
           return;
         }
+
         const text = (item.textContent || "").trim().toLowerCase();
         const expectedArr = expectedGroups[group] || [];
+
         if (expectedArr.includes(text)) {
           zone.classList.add("correct");
         } else {
@@ -1781,96 +1634,273 @@ modeButtons.forEach(btn => {
           allCorrect = false;
         }
       });
-
-      Object.keys(expectedGroups).forEach(group => {
-        const expected = expectedGroups[group];
-        const given = givenGroups[group];
-        if (given.length !== expected.length) {
-          allCorrect = false;
-          return;
-        }
-        expected.forEach(val => {
-          if (!given.includes(val)) allCorrect = false;
-        });
-      });
-
-      if (feedback) {
-        feedback.textContent = allCorrect
-          ? "Richtig! Alle Felder korrekt zugeordnet."
-          : "Einige Zuordnungen oder Mengen sind noch falsch.";
-        feedback.className = allCorrect ? "feedback-ok" : "feedback-error";
-      }
     }
 
-    if (nextBtn && !fromSearchMode && window.currentMode !== "ingredient") {
-      nextBtn.disabled = !allCorrect;
-    }
-  }
-
-  function showSuccessScreen() {
-    const levelCards = getLevelCards(currentLevel);
-    const total = levelCards.length;
-    let message = "", hint = "";
-    if (currentLevel === "einfach") {
-      message = "Super, du hast alle Karten auf Stufe EINFACH geschafft!";
-      hint = "Wenn du bereit bist, probiere jetzt die Stufe MITTEL aus.";
-    } else if (currentLevel === "mittel") {
-      message = "Sehr gut, alle Karten auf Stufe MITTEL sind geschafft!";
-      hint = "Stell dich jetzt der Stufe SCHWER – ohne Vorgaben.";
+    if (allCorrect) {
+      feedback.textContent = "Richtig! Gut gemacht.";
+      feedback.className = "feedback-ok";
+      if (nextBtn) nextBtn.disabled = false;
     } else {
-      message = "Großartig, du hast alle Karten auf der SCHWEREN Stufe gemeistert!";
-      hint = "Du beherrschst dieses Kartenset – Wiederholung zur Festigung ist jederzeit möglich.";
+      feedback.textContent = "Einige Angaben sind noch nicht korrekt.";
+      feedback.className = "feedback-error";
+      if (nextBtn) nextBtn.disabled = true;
     }
-    const levelLabel = currentLevel === "einfach" ? "Einfach" : currentLevel === "mittel" ? "Mittel" : "Schwer";
-    cardContainer.innerHTML = `
-      <div class="card">
-        <h2>Glückwunsch!</h2>
-        <p><strong>${message}</strong></p>
-        <p>${hint}</p>
-        <p>Stufe: <strong>${levelLabel}</strong> – Karten insgesamt: ${total}</p>
-        <button id="restartRunBtn">Noch einmal in zufälliger Reihenfolge starten</button>
-      </div>`;
-    if (feedback) {
-      feedback.textContent = "";
-      feedback.className = "";
-    }
-    if (cardCounter) cardCounter.textContent = "";
-    document.getElementById("restartRunBtn")?.addEventListener("click", () => {
-      const lc = getLevelCards(currentLevel);
-      shuffledIndices = shuffleArray(lc.map((_, i) => i));
-      currentIndex = 0;
-      renderCurrentCard();
-    });
   }
 
   function nextCard() {
-    if (window.currentMode === "ingredient") {
+    if (currentMode === "ingredient") {
       nextIngredientQuestion();
       return;
     }
 
-    if (fromSearchMode) return;
+    if (fromSearchMode) {
+      clearFeedback();
+      return;
+    }
+
     const levelCards = getLevelCards(currentLevel);
-    if (levelCards.length === 0) return;
+    if (!levelCards.length) return;
+
     if (currentIndex >= levelCards.length - 1) {
-      showSuccessScreen();
+      cardContainer.innerHTML = `
+        <div class="card">
+          <h2>Glückwunsch!</h2>
+          <p><strong>Du hast alle Karten dieser Stufe geschafft.</strong></p>
+          <p>Starte die Stufe gerne noch einmal in neuer Reihenfolge.</p>
+        </div>
+      `;
+      cardCounter.textContent = "";
+      clearFeedback();
+      nextBtn.disabled = true;
+      return;
+    }
+
+    currentIndex += 1;
+    renderCurrentCard();
+  }
+
+
+  // ===================
+  // Inhaltsstoff-/Wirkungs-Quiz
+  // ===================
+
+  function buildIngredientQuestionPool() {
+    const ingredientMap = new Map();
+    const effectMap = new Map();
+
+    cards.forEach(card => {
+      const pid = card.id;
+
+      (card.inhaltsstoffe || []).forEach(raw => {
+        const txt = (raw || "").trim();
+        if (!txt) return;
+
+        const key = txt.toLowerCase();
+        if (!ingredientMap.has(key)) {
+          ingredientMap.set(key, { label: txt, plantIds: new Set() });
+        }
+        ingredientMap.get(key).plantIds.add(pid);
+      });
+
+      (card.wirkung || []).forEach(raw => {
+        const txt = (raw || "").trim();
+        if (!txt) return;
+
+        const key = txt.toLowerCase();
+        if (!effectMap.has(key)) {
+          effectMap.set(key, { label: txt, plantIds: new Set() });
+        }
+        effectMap.get(key).plantIds.add(pid);
+      });
+    });
+
+    const questions = [];
+
+    ingredientMap.forEach(val => {
+      questions.push({
+        type: "ingredient",
+        label: val.label,
+        correctPlantIds: Array.from(val.plantIds)
+      });
+    });
+
+    effectMap.forEach(val => {
+      questions.push({
+        type: "effect",
+        label: val.label,
+        correctPlantIds: Array.from(val.plantIds)
+      });
+    });
+
+    ingredientQuestions = shuffleArray(questions);
+    currentIngredientQuestionIndex = 0;
+  }
+
+  function renderIngredientQuestion() {
+    clearFeedback();
+
+    if (!ingredientQuestions.length) {
+      cardContainer.innerHTML = `<p>Keine Inhaltsstoff-/Wirkungsdaten vorhanden.</p>`;
+      if (cardCounter) cardCounter.textContent = "";
+      if (checkBtn) checkBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.disabled = true;
+      return;
+    }
+
+    const q = ingredientQuestions[currentIngredientQuestionIndex];
+    const quizTitel = q.type === "ingredient" ? "Inhaltsstoff-Quiz" : "Wirkungs-Quiz";
+    const frageText =
+      q.type === "ingredient"
+        ? `Welche Pflanzen haben den Inhaltsstoff „${q.label}“?`
+        : `Welche Pflanzen wirken „${q.label}“?`;
+
+    cardContainer.innerHTML = `
+      <div class="card">
+        <h2>${quizTitel}</h2>
+
+        <div class="ingredient-progress-wrap">
+          <div id="ingredientProgressLabel" class="ingredient-progress-label"></div>
+          <progress
+            id="ingredientProgress"
+            class="ingredient-progress"
+            value="0"
+            max="100"
+          ></progress>
+        </div>
+
+        <p>${frageText}</p>
+        <div id="ingredientOptions"></div>
+      </div>
+    `;
+
+    if (optionsContainer) optionsContainer.classList.add("hidden");
+    if (checkBtn) checkBtn.classList.remove("hidden");
+    if (nextBtn) {
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = "Nächste Frage";
+      nextBtn.disabled = true;
+    }
+
+    renderIngredientOptions(q);
+    updateCardCounter();
+    updateIngredientProgress();
+  }
+
+  function renderIngredientOptions(question) {
+    const container = document.getElementById("ingredientOptions");
+    if (!container) return;
+
+    const correctSet = new Set(question.correctPlantIds);
+    const allPlantIds = cards.map(c => c.id);
+    const wrongCandidates = shuffleArray(allPlantIds.filter(id => !correctSet.has(id)));
+
+    const numCorrect = question.correctPlantIds.length;
+    let numWrong = Math.max(2, Math.round(numCorrect * 1.5));
+    numWrong = Math.min(numWrong, wrongCandidates.length);
+
+    const wrongIds = wrongCandidates.slice(0, numWrong);
+    const optionIds = shuffleArray([...question.correctPlantIds, ...wrongIds]);
+
+    container.innerHTML = "";
+
+    optionIds.forEach(pid => {
+      const card = cards.find(c => c.id === pid);
+      const label = card ? card.germanName : pid;
+      const isCorrect = correctSet.has(pid);
+      const idAttr = `opt-${pid}-${Math.random().toString(36).slice(2, 8)}`;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "ingredient-option";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = idAttr;
+      checkbox.dataset.plantId = pid;
+      checkbox.dataset.correct = isCorrect ? "true" : "false";
+
+      const labelEl = document.createElement("label");
+      labelEl.setAttribute("for", idAttr);
+      labelEl.textContent = label;
+
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(labelEl);
+      container.appendChild(wrapper);
+    });
+  }
+
+  function checkIngredientQuestion() {
+    if (!ingredientQuestions.length) return;
+
+    const q = ingredientQuestions[currentIngredientQuestionIndex];
+    const correctSet = new Set(q.correctPlantIds);
+    const wrappers = Array.from(document.querySelectorAll("#ingredientOptions .ingredient-option"));
+
+    let allCorrect = true;
+
+    wrappers.forEach(wrapper => {
+      wrapper.classList.remove("correct", "incorrect");
+
+      const cb = wrapper.querySelector('input[type="checkbox"]');
+      if (!cb) return;
+
+      const pid = cb.dataset.plantId;
+      const isCorrectPlant = correctSet.has(pid);
+      const isChecked = cb.checked;
+
+      if (isChecked && isCorrectPlant) {
+        wrapper.classList.add("correct");
+      } else if (isChecked && !isCorrectPlant) {
+        wrapper.classList.add("incorrect");
+        allCorrect = false;
+      } else if (!isChecked && isCorrectPlant) {
+        allCorrect = false;
+      }
+    });
+
+    if (allCorrect) {
+      feedback.textContent = "Richtig! Alle passenden Pflanzen ausgewählt.";
+      feedback.className = "feedback-ok";
+      nextBtn.disabled = false;
     } else {
-      currentIndex += 1;
-      renderCurrentCard();
+      feedback.textContent = "Noch nicht ganz richtig. Überprüfe deine Auswahl.";
+      feedback.className = "feedback-error";
+      nextBtn.disabled = true;
     }
   }
 
+  function nextIngredientQuestion() {
+    if (!ingredientQuestions.length) return;
+
+    if (currentIngredientQuestionIndex >= ingredientQuestions.length - 1) {
+      cardContainer.innerHTML = `
+        <div class="card">
+          <h2>Glückwunsch!</h2>
+          <p><strong>Du hast alle Inhaltsstoff-/Wirkungsfragen durchgearbeitet.</strong></p>
+          <p>Du kannst das Quiz jederzeit neu starten.</p>
+        </div>
+      `;
+      cardCounter.textContent = "";
+      clearFeedback();
+      nextBtn.disabled = true;
+      return;
+    }
+
+    currentIngredientQuestionIndex += 1;
+    renderIngredientQuestion();
+  }
+
+
   // ===================
-  // Eigenes Lernen – Suchlogik (unverändert)
+  // Suche / Eigenes Lernen
   // ===================
 
   function runCustomSearch() {
-    if (!customSearchInput || !customSearchResults) return;
     const termRaw = customSearchInput.value.trim();
     if (!termRaw) {
       customSearchResults.innerHTML = "<p>Bitte ein Suchwort eingeben.</p>";
       return;
     }
+
     const term = termRaw.toLowerCase();
     const matches = new Map();
 
@@ -1885,61 +1915,122 @@ modeButtons.forEach(btn => {
         ...(card.anwendung || []),
         ...(card.warnhinweise || [])
       ];
-      if (fields.some(txt => (txt || "").trim().toLowerCase() === term)) {
+
+      if (
+        fields.some(txt =>
+          (txt || "").trim().toLowerCase().includes(term)
+        )
+      ) {
         matches.set(card.germanName || card.id, card.id);
       }
     });
 
-    const arr = Array.from(matches.entries()).sort((a, b) => a[0].localeCompare(b[0], "de"));
+    const arr = Array.from(matches.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0], "de")
+    );
 
     if (!arr.length) {
-      customSearchResults.innerHTML = `<p>Keine Treffer für „${termRaw}" gefunden.</p>`;
+      customSearchResults.innerHTML = `<p>Keine Treffer für „${termRaw}“ gefunden.</p>`;
       return;
     }
 
     customSearchResults.innerHTML = `
       <p>Treffer (${arr.length}):</p>
       <ul class="custom-results-list">
-        ${arr.map(([displayName, id]) =>
-          `<li><button class="custom-result-btn" data-card-id="${id}">${displayName}</button></li>`
-        ).join("")}
-      </ul>`;
+        ${arr
+          .map(
+            ([displayName, id]) => `
+              <li>
+                <button class="custom-result-btn" data-card-id="${id}">
+                  ${displayName}
+                </button>
+              </li>
+            `
+          )
+          .join("")}
+      </ul>
+    `;
 
     customSearchResults.querySelectorAll(".custom-result-btn").forEach(btn => {
-      btn.addEventListener("click", () => openSingleCardQuizFromSearch(btn.dataset.cardId));
+      btn.addEventListener("click", () => {
+        openSingleCardQuizFromSearch(btn.dataset.cardId);
+      });
     });
   }
 
   function openSingleCardQuizFromSearch(cardId) {
     fromSearchMode = true;
     searchCardId = cardId;
+    currentMode = "cards";
     currentLevel = "mittel";
-    window.currentMode = "cards";
+
+    showApp();
+    showQuizLayout();
+
     if (levelSelect) levelSelect.value = "mittel";
-
-    if (landing) landing.classList.add("hidden");
-    if (app) app.classList.remove("hidden");
-    if (quizMain) quizMain.classList.remove("hidden");
-    if (customMain) customMain.classList.add("hidden");
-    if (quizTopBar) quizTopBar.classList.remove("hidden");
-    if (appTitle) appTitle.textContent = "Lernkarte – " + cardId;
     if (backToSearchBtn) backToSearchBtn.classList.remove("hidden");
-    if (nextBtn) {
-      nextBtn.classList.add("hidden");
-      nextBtn.disabled = true;
-    }
-
-    setBodyLevelClass();
+    if (nextBtn) nextBtn.classList.add("hidden");
+    if (checkBtn) checkBtn.classList.remove("hidden");
+    if (optionsContainer) optionsContainer.classList.remove("hidden");
 
     const levelCards = getLevelCards(currentLevel);
-    let idx = levelCards.findIndex(c => c.id === cardId);
-    if (idx === -1) idx = 0;
+    const idx = levelCards.findIndex(c => c.id === cardId);
+
+    if (idx < 0) {
+      cardContainer.innerHTML = "<p>Diese Karte wurde nicht gefunden.</p>";
+      return;
+    }
+
     shuffledIndices = [idx];
     currentIndex = 0;
     renderCurrentCard();
   }
 
-  window.openSingleCardQuizFromSearch = openSingleCardQuizFromSearch;
+
+  // ===================
+  // Moduswechsel
+  // ===================
+
+  function startMode(mode) {
+    showApp();
+    clearFeedback();
+
+    fromSearchMode = false;
+    searchCardId = null;
+    currentMode = "cards";
+
+    if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+
+    if (mode === "custom") {
+      showCustomLayout();
+      if (customSearchResults) customSearchResults.innerHTML = "";
+      if (customSearchInput) customSearchInput.value = "";
+      return;
+    }
+
+    if (mode === "ingredient") {
+      currentMode = "ingredient";
+      showIngredientLayout();
+
+      buildIngredientQuestionPool();
+      renderIngredientQuestion();
+      return;
+    }
+
+    showQuizLayout();
+
+    if (nextBtn) {
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = "Nächste Karte";
+      nextBtn.disabled = true;
+    }
+
+    currentLevel = ["einfach", "mittel", "schwer"].includes(mode) ? mode : "einfach";
+    if (levelSelect) levelSelect.value = currentLevel;
+
+    initLevel();
+  }
+
 
   // ===================
   // Event-Listener
@@ -1949,293 +2040,81 @@ modeButtons.forEach(btn => {
     levelSelect.addEventListener("change", () => {
       fromSearchMode = false;
       searchCardId = null;
-      window.currentMode = "cards";
+      currentMode = "cards";
+
       if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
       if (nextBtn) {
         nextBtn.classList.remove("hidden");
         nextBtn.textContent = "Nächste Karte";
         nextBtn.disabled = true;
       }
+
+      showQuizLayout();
       currentLevel = levelSelect.value;
-      setBodyLevelClass();
       initLevel();
     });
   }
 
-  if (checkBtn) checkBtn.addEventListener("click", checkAnswers);
+  if (checkBtn) {
+    checkBtn.addEventListener("click", checkAnswers);
+  }
+
   if (nextBtn) {
     nextBtn.addEventListener("click", nextCard);
-    nextBtn.disabled = true;
   }
 
   if (restartBtn) {
     restartBtn.addEventListener("click", () => {
-      if (window.currentMode === "ingredient") {
+      clearFeedback();
+
+      if (currentMode === "ingredient") {
         buildIngredientQuestionPool();
         renderIngredientQuestion();
-      } else {
-        if (fromSearchMode && searchCardId) {
-          openSingleCardQuizFromSearch(searchCardId);
-        } else {
-          initLevel();
-        }
+        return;
       }
+
+      if (fromSearchMode && searchCardId) {
+        openSingleCardQuizFromSearch(searchCardId);
+        return;
+      }
+
+      initLevel();
     });
   }
 
   if (backToLandingBtn) {
     backToLandingBtn.addEventListener("click", () => {
-      fromSearchMode = false;
-      searchCardId = null;
-      if (app) app.classList.add("hidden");
-      if (landing) landing.classList.remove("hidden");
-      window.scrollTo(0, 0);
+      resetToLandingState();
+      showLanding();
     });
   }
 
-  if (customSearchBtn) customSearchBtn.addEventListener("click", runCustomSearch);
+  if (backToSearchBtn) {
+    backToSearchBtn.addEventListener("click", () => {
+      showCustomLayout();
+      clearFeedback();
+      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+    });
+  }
+
+  if (customSearchBtn) {
+    customSearchBtn.addEventListener("click", runCustomSearch);
+  }
+
   if (customSearchInput) {
-    customSearchInput.addEventListener("keypress", e => {
+    customSearchInput.addEventListener("keydown", e => {
       if (e.key === "Enter") {
-        e.preventDefault();
         runCustomSearch();
       }
     });
   }
+
   if (customBackBtn) {
     customBackBtn.addEventListener("click", () => {
-      fromSearchMode = false;
-      searchCardId = null;
-      if (app) app.classList.add("hidden");
-      if (landing) landing.classList.remove("hidden");
-      window.scrollTo(0, 0);
+      resetToLandingState();
+      showLanding();
     });
   }
-  if (backToSearchBtn) {
-    backToSearchBtn.addEventListener("click", () => {
-      fromSearchMode = false;
-      searchCardId = null;
-      if (quizMain) quizMain.classList.add("hidden");
-      if (customMain) customMain.classList.remove("hidden");
-      if (quizTopBar) quizTopBar.classList.add("hidden");
-      if (appTitle) appTitle.textContent = "Eigenes Lernen – Suchfunktion";
-      if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
-      if (nextBtn) {
-        nextBtn.classList.remove("hidden");
-        nextBtn.textContent = "Nächste Karte";
-        nextBtn.disabled = true;
-      }
-      clearFeedback();
-    });
-  }
+
+  showLanding();
 });
-
-// =============== Drag & Drop + Touch ===============
-
-function setupDragDrop(card, level) {
-  const dropzones = Array.from(document.querySelectorAll(".dropzone"));
-  const optionsList = document.getElementById("optionsList");
-  const nextBtnGlobal = document.getElementById("nextBtn");
-  const feedbackEl = document.getElementById("feedback");
-
-  const isTouch =
-    "ontouchstart" in window ||
-    navigator.maxTouchPoints > 0 ||
-    navigator.msMaxTouchPoints > 0;
-
-  let options = [];
-
-  (card.drogenParts || []).forEach(text => {
-    const t = (text || "").trim();
-    if (t) options.push({ text: t, group: "drogen" });
-  });
-  (card.familieParts || []).forEach(text => {
-    const t = (text || "").trim();
-    if (t) options.push({ text: t, group: "familie" });
-  });
-
-  function pushCorrect(arr, groupName) {
-    (arr || []).forEach(text => {
-      const t = (text || "").trim();
-      if (t) options.push({ text: t, group: groupName });
-    });
-  }
-  pushCorrect(card.inhaltsstoffe, "inhaltsstoffe");
-  pushCorrect(card.wirkung, "wirkung");
-  pushCorrect(card.anwendung, "anwendung");
-  pushCorrect(card.warnhinweise, "warnhinweise");
-
-  if (level === "mittel") {
-    const otherCards = cards.filter(c => c.id !== card.id);
-    function collectOther(extractor) {
-      const all = [];
-      otherCards.forEach(c => (extractor(c) || []).forEach(txt => {
-        const t = (txt || "").trim();
-        if (t) all.push(t);
-      }));
-      return all;
-    }
-    const otherByGroup = {
-      drogen: collectOther(c => c.drogenParts),
-      familie: collectOther(c => c.familieParts),
-      inhaltsstoffe: collectOther(c => c.inhaltsstoffe),
-      wirkung: collectOther(c => c.wirkung),
-      anwendung: collectOther(c => c.anwendung),
-      warnhinweise: collectOther(c => c.warnhinweise)
-    };
-
-    function addDistractorsFor(groupName, correctArrayRaw) {
-      const correctArray = (correctArrayRaw || []).map(t => (t || "").trim()).filter(Boolean);
-      const pool = shuffleArray(otherByGroup[groupName] || []);
-      const correctLower = correctArray.map(t => t.toLowerCase());
-      const needed = Math.floor(correctArray.length / 2);
-      let count = 0;
-      for (let i = 0; i < pool.length && count < needed; i++) {
-        if (!correctLower.includes(pool[i].toLowerCase())) {
-          options.push({ text: pool[i], group: groupName });
-          count++;
-        }
-      }
-    }
-
-    addDistractorsFor("drogen", card.drogenParts);
-    addDistractorsFor("familie", card.familieParts);
-    addDistractorsFor("inhaltsstoffe", card.inhaltsstoffe);
-    addDistractorsFor("wirkung", card.wirkung);
-    addDistractorsFor("anwendung", card.anwendung);
-    addDistractorsFor("warnhinweise", card.warnhinweise);
-  }
-
-  const shuffledOptions = shuffleArray(options);
-
-  function autoCheckEinfach() {
-    if (level !== "einfach") return;
-    if (!nextBtnGlobal) return;
-    const allOk = checkAllDropzonesCorrect(card);
-    nextBtnGlobal.disabled = !allOk;
-    if (feedbackEl) {
-      if (allOk) {
-        feedbackEl.textContent = "Richtig! Alle Felder korrekt zugeordnet.";
-        feedbackEl.className = "feedback-ok";
-      } else {
-        feedbackEl.textContent = "";
-        feedbackEl.className = "";
-      }
-    }
-  }
-
-  function createOptionElementDesktop(opt) {
-    const el = document.createElement("div");
-    el.className = "option-item";
-    el.textContent = opt.text;
-    el.draggable = true;
-    el.dataset.group = opt.group || "";
-    el.addEventListener("dragstart", e => {
-      el.classList.add("dragging");
-      e.dataTransfer.setData("text/plain", JSON.stringify({
-        text: el.textContent, group: el.dataset.group || ""
-      }));
-    });
-    el.addEventListener("dragend", () => el.classList.remove("dragging"));
-    return el;
-  }
-
-  let selectedOption = null;
-
-  function createOptionElementTouch(opt) {
-    const el = document.createElement("div");
-    el.className = "option-item";
-    el.textContent = opt.text;
-    el.dataset.group = opt.group || "";
-    el.addEventListener("click", () => {
-      if (selectedOption === el) {
-        el.classList.remove("selected");
-        selectedOption = null;
-      } else {
-        if (selectedOption) selectedOption.classList.remove("selected");
-        selectedOption = el;
-        el.classList.add("selected");
-      }
-    });
-    return el;
-  }
-
-  function setupDropzonesTouch() {
-    dropzones.forEach(zone => {
-      zone.addEventListener("click", () => {
-        const existing = zone.querySelector(".option-item");
-        if (!selectedOption && existing) {
-          optionsList.appendChild(existing);
-          zone.innerHTML = "";
-          zone.classList.remove("correct", "incorrect");
-          delete zone.dataset.chosenGroup;
-          autoCheckEinfach();
-          return;
-        }
-        if (selectedOption && !existing) {
-          zone.innerHTML = "";
-          zone.appendChild(selectedOption);
-          zone.dataset.chosenGroup = selectedOption.dataset.group || "";
-          selectedOption.classList.remove("selected");
-          selectedOption = null;
-          autoCheckEinfach();
-        }
-      });
-    });
-  }
-
-  if (isTouch) {
-    shuffledOptions.forEach(opt => optionsList.appendChild(createOptionElementTouch(opt)));
-    setupDropzonesTouch();
-  } else {
-    shuffledOptions.forEach(opt => optionsList.appendChild(createOptionElementDesktop(opt)));
-
-    dropzones.forEach(zone => {
-      zone.addEventListener("dragover", e => {
-        e.preventDefault();
-        zone.classList.add("over");
-      });
-      zone.addEventListener("dragleave", () => {
-        zone.classList.remove("over");
-      });
-      zone.addEventListener("drop", e => {
-        e.preventDefault();
-        zone.classList.remove("over");
-        const dragging = document.querySelector(".option-item.dragging");
-        if (!dragging) return;
-        const existing = zone.querySelector(".option-item");
-        if (existing && existing !== dragging) {
-          optionsList.appendChild(existing);
-        }
-        zone.innerHTML = "";
-        zone.appendChild(dragging);
-        dragging.classList.remove("dragging");
-        zone.dataset.chosenGroup = dragging.dataset.group || "";
-        autoCheckEinfach();
-      });
-    });
-
-    optionsList.addEventListener("dragover", e => {
-      e.preventDefault();
-      optionsList.classList.add("over");
-    });
-    optionsList.addEventListener("dragleave", () => {
-      optionsList.classList.remove("over");
-    });
-    optionsList.addEventListener("drop", e => {
-      e.preventDefault();
-      optionsList.classList.remove("over");
-      const dragging = document.querySelector(".option-item.dragging");
-      if (!dragging) return;
-      const parent = dragging.parentElement;
-      if (parent && parent.classList.contains("dropzone")) {
-        parent.innerHTML = "";
-        parent.classList.remove("correct", "incorrect");
-        delete parent.dataset.chosenGroup;
-      }
-      optionsList.appendChild(dragging);
-      dragging.classList.remove("dragging");
-      autoCheckEinfach();
-    });
-  }
-}

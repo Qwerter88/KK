@@ -1,65 +1,64 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pflanzen-Lernkarten</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Landing-Page -->
+  <!-- Landing -->
   <section id="landing">
     <div class="landing-inner">
       <h1>Pflanzen-Lernkarten</h1>
       <p class="landing-subtitle">
-        Wähle deinen Lernmodus.
+        Wähle einen Lernmodus für das Kartenset.
       </p>
 
       <div class="mode-grid">
         <div class="mode-card">
-          <button class="mode-btn" data-mode="einfach">Einfach</button>
+          <button class="mode-btn" data-mode="einfach">Einfach lernen</button>
           <p class="mode-desc">
-            Drag & Drop mit direkter Kontrolle. Die nächste Karte wird automatisch freigeschaltet, sobald alles korrekt ist.
+            Zuordnen mit sichtbaren Bausteinen. Ideal zum Einstieg.
           </p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="mittel">Mittel</button>
+          <button class="mode-btn" data-mode="mittel">Mittel lernen</button>
           <p class="mode-desc">
-            Drag & Drop mit Prüfung per Button. Gut zum gezielten Wiederholen.
+            Zuordnen mit Bausteinen, aber erst nach Prüfung geht es weiter.
           </p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="schwer">Schwer</button>
+          <button class="mode-btn" data-mode="schwer">Schwer lernen</button>
           <p class="mode-desc">
-            Freitext ohne Auswahlhilfen. Ideal zur echten Selbstkontrolle.
+            Freitext ohne Vorgaben. Perfekt zur echten Selbstkontrolle.
           </p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="ingredient">Inhaltsstoff-Quiz</button>
+          <button class="mode-btn" data-mode="ingredient">Inhaltsstofflernen</button>
           <p class="mode-desc">
-            Multiple-Choice-Quiz zu Inhaltsstoffen und Wirkungen.
+            Multiple-Choice-Quiz zu Inhaltsstoffen und Wirkungen mit Lernfortschritt.
           </p>
         </div>
 
         <div class="mode-card">
           <button class="mode-btn" data-mode="custom">Eigenes Lernen</button>
           <p class="mode-desc">
-            Suche gezielt nach einzelnen Pflanzen und übe sie separat.
+            Suche gezielt nach einer Pflanze und lerne einzelne Karten separat.
           </p>
         </div>
       </div>
 
       <div class="teacher-link-wrapper">
-        <button id="teacherLoginBtn" class="teacher-btn" type="button">Lehrerbereich</button>
+        <button id="teacherLoginBtn" class="teacher-btn">Lehrerbereich</button>
       </div>
     </div>
   </section>
 
-  <!-- App-Bereich -->
+  <!-- App -->
   <section id="app" class="hidden">
     <header>
       <h2 id="appTitle">Pflanzen-Lernkarten – Kartenset</h2>
@@ -78,7 +77,7 @@
     </header>
 
     <main>
-      <!-- Normales Kartenlernen + Inhaltsstoffquiz -->
+      <!-- Quizbereich -->
       <section id="quizMain">
         <div id="cardContainerSection">
           <div id="cardContainer"></div>
@@ -90,20 +89,19 @@
         </aside>
       </section>
 
-      <!-- Eigenes Lernen -->
+      <!-- Suchbereich -->
       <section id="customMain" class="hidden">
         <div class="custom-section">
           <h3>Eigenes Lernen</h3>
           <p class="small">
-            Gib einen exakten Begriff ein, z. B. Pflanze, Inhaltsstoff oder Wirkung.
+            Suche nach einem exakten Begriff, z. B. Pflanzenname, Inhaltsstoff oder Wirkung.
           </p>
 
           <input
             id="customSearchInput"
             type="text"
-            placeholder="Suchwort eingeben..."
-            autocomplete="off"
-          >
+            placeholder="Suchbegriff eingeben..."
+          />
 
           <div class="nav-buttons">
             <button id="customSearchBtn" type="button">Suchen</button>
