@@ -22,7 +22,7 @@ body {
 }
 
 .landing-inner {
-  max-width: 900px;
+  max-width: 1400px;
   width: 100%;
   background-color: rgba(255,255,255,0.9);
   border-radius: 10px;
@@ -33,28 +33,35 @@ body {
 
 .landing-inner h1 {
   margin-top: 0;
+  margin-bottom: 14px;
   font-size: 1.8rem;
   color: #003b73;
 }
 
 .landing-subtitle {
-  margin: 8px 0 18px 0;
+  margin: 0 0 18px 0;
   font-size: 1rem;
   color: #444;
 }
 
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
   margin-top: 10px;
+  align-items: stretch;
 }
 
 .mode-card {
   background-color: #f7f9ff;
   border-radius: 8px;
-  padding: 12px 10px 14px 10px;
+  padding: 12px 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 150px;
 }
 
 .mode-btn {
@@ -66,6 +73,7 @@ body {
   color: white;
   font-size: 0.95rem;
   cursor: pointer;
+  margin-bottom: 8px;
 }
 
 .mode-btn:hover {
@@ -73,9 +81,15 @@ body {
 }
 
 .mode-desc {
-  margin-top: 6px;
+  margin: 0;
   font-size: 0.85rem;
   color: #333;
+  text-align: center;
+  line-height: 1.35;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Lehrerzugang */
@@ -386,6 +400,35 @@ a {
   text-align: left;
 }
 
+/* Inhaltsstoff-Quiz – Multiple-Choice-Layout */
+
+#ingredientOptions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.ingredient-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background-color: #f7f7f7;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.ingredient-option.incorrect {
+  border-color: #b22222;
+  background-color: #f8dada;
+}
+
+.ingredient-option.correct {
+  border-color: #2e8b57;
+  background-color: #ddf5dd;
+}
+
 /* Edit-Seite (für edit.html) */
 
 .edit-container {
@@ -475,6 +518,12 @@ a {
 
 /* Responsiv */
 
+@media (max-width: 1200px) {
+  .mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 800px) {
   #quizMain {
     flex-direction: column;
@@ -485,5 +534,23 @@ a {
     flex: 1 1 100%;
     max-width: 100%;
     min-width: 0;
+  }
+
+  .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #ingredientOptions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-desc {
+    min-height: auto;
   }
 }

@@ -56,6 +56,16 @@
           </button>
           <p class="mode-desc">Suche nach einem speziellen Karteikartenquiz</p>
         </div>
+
+        <div class="mode-card">
+          <button
+            class="mode-btn"
+            data-mode="ingredient"
+            onclick="window.startMode && window.startMode('ingredient')">
+            Inhaltsstoff-Lernen
+          </button>
+          <p class="mode-desc">Quiz über Inhaltsstoffe und Wirkungen von Arzneipflanzen.</p>
+        </div>
       </div>
 
       <div class="teacher-link-wrapper">
@@ -78,7 +88,7 @@
       </div>
     </header>
 
-    <!-- Quiz-Modus -->
+    <!-- Quiz-Bereich (Karten-Quiz + Inhaltsstoff-Quiz) -->
     <main id="quizMain">
       <section id="cardContainerSection">
         <div id="cardContainer"></div>
