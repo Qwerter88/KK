@@ -1204,12 +1204,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!landing && !app) return;
 
-  modeButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const mode = btn.dataset.mode;
-      startMode(mode);
-    });
+modeButtons.forEach(btn => {
+  let touchHandled = false;
+
+  const startSelectedMode = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    const mode = (btn.dataset.mode || "").trim().toLowerCase();
+
+    if (mode === "ingredient") {
+      startMode("ingredient");
+      return;
+    }
+
+    if (mode === "custom") {
+      startMode("custom");
+      return;
+    }
+
+    if (mode === "mittel") {
+      startMode("mittel");
+      return;
+    }
+
+    if (mode === "schwer") {
+      startMode("schwer");
+      return;
+    }
+
+    startMode("einfach");
+  };
+
+  btn.addEventListener("touchend", (e) => {
+    touchHandled = true;
+    startSelectedMode(e);
+
+    window.setTimeout(() => {
+      touchHandled = false;
+    }, 400);
+  }, { passive: false });
+
+  btn.addEventListener("click", (e) => {
+    if (touchHandled) return;
+    startSelectedMode(e);
   });
+});
 
   function clearFeedback() {
     if (!feedback) return;
