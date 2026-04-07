@@ -818,7 +818,7 @@ function updateCardCounter() {
       return;
     }
 
-    cardCounter.textContent = `Frage ${currentIngredientQuestionIndex + 1} von ${ingredientQuestions.length}`;
+    cardCounter.textContent = `Frage ${currentIngredientQuestionIndex + 1}`;
     return;
   }
 
@@ -828,7 +828,7 @@ function updateCardCounter() {
     return;
   }
 
-  cardCounter.textContent = `Karte ${currentIndex + 1} von ${levelCards.length}`;
+  cardCounter.textContent = `Karte ${currentIndex + 1}`;
 }
 
 // ===================
@@ -1263,20 +1263,66 @@ function goToNextCard() {
 // ===================
 
 function buildIngredientQuestions() {
-  return baseCards.map((card) => {
-    const correctAnswers = [...new Set([...(card.inhaltsstoffe || []), ...(card.wirkung || [])])];
-    const allPool = [...new Set(baseCards.flatMap((c) => [...(c.inhaltsstoffe || []), ...(c.wirkung || [])]))];
-    const wrongAnswers = shuffleArray(allPool.filter((item) => !correctAnswers.includes(item))).slice(0, 6);
-    const options = shuffleArray([...correctAnswers, ...wrongAnswers]);
+  const questionMap = new Map();
 
-    return {
-      id: card.id,
-      plant: card.germanName,
-      questionText: `Welche Inhaltsstoffe und Wirkungen passen zu ${card.germanName}?`,
-      correctAnswers,
-      options
-    };
+  baseCards.forEach((card) => {
+    const germanName = (card.germanName || "").trim();
+    if (!germanName) return;
+
+    const entries = [
+      ...(card.inhaltsstoffe || []).map((term) => ({
+        term: (term || "").trim(),
+        type: "Inhaltsstoff"
+      })),
+      ...(card.wirkung || []).map((term) => ({
+        term: (term || "").trim(),
+        type: "Wirkung"
+      }))
+    ];
+
+    entries.forEach(({ term, type }) => {
+      if (!term) return;
+
+      const key = `${type}::${term}`;
+
+      if (!questionMap.has(key)) {
+        questionMap.set(key, {
+          id: key,
+          type,
+          term,
+          correctAnswers: []
+        });
+      }
+
+      questionMap.get(key).correctAnswers.push(germanName);
+    });
   });
+
+  const allPlantNames = [...new Set(
+    baseCards
+      .map((card) => (card.germanName || "").trim())
+      .filter(Boolean)
+  )];
+
+  return [...questionMap.values()]
+    .map((question) => {
+      const correctAnswers = [...new Set(question.correctAnswers)];
+      const wrongAnswers = shuffleArray(
+        allPlantNames.filter((name) => !correctAnswers.includes(name))
+      ).slice(0, 4);
+
+      const options = shuffleArray([...correctAnswers, ...wrongAnswers]);
+
+      return {
+        id: question.id,
+        term: question.term,
+        type: question.type,
+        questionText: `Welche Pflanzen passen zu diesem ${question.type === "Inhaltsstoff" ? "Inhaltsstoff" : "Wirkbegriff"}?`,
+        correctAnswers,
+        options
+      };
+    })
+    .filter((question) => question.correctAnswers.length > 0);
 }
 
 function startIngredientQuiz() {
@@ -1315,19 +1361,18 @@ function renderIngredientQuestion() {
 
   cardContainer.innerHTML = `
     <div class="card">
-      <h2>${escapeHtml(q.plant)}</h2>
+      <h2>${escapeHtml(q.term)}</h2>
       <p>${escapeHtml(q.questionText)}</p>
+      <div class="small" style="margin-bottom: 12px;">
+        Kategorie: ${escapeHtml(q.type)}
+      </div>
       <div id="ingredientOptions">
-        ${q.options
-          .map(
-            (option, index) => `
+        ${q.options.map((option, index) => `
           <label class="ingredient-option" data-option="${index}">
             <input type="checkbox" value="${escapeHtml(option)}">
             <span>${escapeHtml(option)}</span>
           </label>
-        `
-          )
-          .join("")}
+        `).join("")}
       </div>
     </div>
   `;
