@@ -282,7 +282,7 @@ main {
   background-color: #f8dada;
 }
 
-/* Freitextfelder (schwer) */
+/* Freitextfelder */
 
 .input-field {
   width: 100%;
@@ -400,7 +400,7 @@ a {
   text-align: left;
 }
 
-/* Inhaltsstoff-Quiz – Multiple-Choice-Layout */
+/* Inhaltsstoff-Quiz */
 
 #ingredientOptions {
   display: grid;
@@ -467,7 +467,7 @@ a {
   border-radius: 999px;
 }
 
-/* Edit-Seite (für edit.html) */
+/* Edit-Seite */
 
 .edit-container {
   max-width: 900px;

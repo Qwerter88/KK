@@ -7,48 +7,35 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Landing -->
   <section id="landing">
     <div class="landing-inner">
       <h1>Pflanzen-Lernkarten</h1>
-      <p class="landing-subtitle">
-        Wähle einen Lernmodus für das Kartenset.
-      </p>
+      <p class="landing-subtitle">Wähle einen Lernmodus für das Kartenset.</p>
 
       <div class="mode-grid">
         <div class="mode-card">
-          <button class="mode-btn" data-mode="einfach">Einfach lernen</button>
-          <p class="mode-desc">
-            Zuordnen mit sichtbaren Bausteinen. Ideal zum Einstieg.
-          </p>
+          <button class="mode-btn" data-mode="einfach">Einfach</button>
+          <p class="mode-desc">Zuordnen mit sichtbaren Bausteinen. Ideal zum Einstieg.</p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="mittel">Mittel lernen</button>
-          <p class="mode-desc">
-            Zuordnen mit Bausteinen, aber erst nach Prüfung geht es weiter.
-          </p>
+          <button class="mode-btn" data-mode="mittel">Mittel</button>
+          <p class="mode-desc">Zuordnen mit Bausteinen, aber erst nach Prüfung geht es weiter.</p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="schwer">Schwer lernen</button>
-          <p class="mode-desc">
-            Freitext ohne Vorgaben. Perfekt zur echten Selbstkontrolle.
-          </p>
+          <button class="mode-btn" data-mode="schwer">Schwer</button>
+          <p class="mode-desc">Freitext ohne Vorgaben. Perfekt zur echten Selbstkontrolle.</p>
         </div>
 
         <div class="mode-card">
-          <button class="mode-btn" data-mode="ingredient">Inhaltsstofflernen</button>
-          <p class="mode-desc">
-            Multiple-Choice-Quiz zu Inhaltsstoffen und Wirkungen mit Lernfortschritt.
-          </p>
+          <button class="mode-btn" data-mode="ingredient">Inhaltsstoff-Lernen</button>
+          <p class="mode-desc">Multiple-Choice-Quiz zu Inhaltsstoffen und Wirkungen mit Lernfortschritt.</p>
         </div>
 
         <div class="mode-card">
           <button class="mode-btn" data-mode="custom">Eigenes Lernen</button>
-          <p class="mode-desc">
-            Suche gezielt nach einer Pflanze und lerne einzelne Karten separat.
-          </p>
+          <p class="mode-desc">Suche gezielt nach einer Pflanze und lerne einzelne Karten separat.</p>
         </div>
       </div>
 
@@ -58,7 +45,6 @@
     </div>
   </section>
 
-  <!-- App -->
   <section id="app" class="hidden">
     <header>
       <h2 id="appTitle">Pflanzen-Lernkarten – Kartenset</h2>
@@ -71,58 +57,53 @@
           <option value="schwer">Schwer</option>
         </select>
 
-        <button id="backToLandingBtn" type="button">Zurück zur Hauptseite</button>
+        <button id="backToLandingBtn" type="button">Zur Startseite</button>
         <button id="backToSearchBtn" type="button" class="hidden">Zurück zur Suche</button>
       </div>
     </header>
 
-    <main>
-      <!-- Quizbereich -->
-      <section id="quizMain">
-        <div id="cardContainerSection">
-          <div id="cardContainer"></div>
-        </div>
+    <main id="quizMain">
+      <section id="cardContainerSection">
+        <div id="cardContainer"></div>
 
-        <aside id="optionsContainer">
-          <h3>Bausteine</h3>
-          <div id="optionsList"></div>
-        </aside>
-      </section>
-
-      <!-- Suchbereich -->
-      <section id="customMain" class="hidden">
-        <div class="custom-section">
-          <h3>Eigenes Lernen</h3>
-          <p class="small">
-            Suche nach einem exakten Begriff, z. B. Pflanzenname, Inhaltsstoff oder Wirkung.
-          </p>
-
-          <input
-            id="customSearchInput"
-            type="text"
-            placeholder="Suchbegriff eingeben..."
-          />
+        <footer>
+          <div id="cardCounter"></div>
+          <div id="feedback"></div>
 
           <div class="nav-buttons">
-            <button id="customSearchBtn" type="button">Suchen</button>
-            <button id="customBackBtn" type="button">Zurück zur Hauptseite</button>
+            <button id="checkBtn" type="button">Überprüfen</button>
+            <button id="nextBtn" type="button" disabled>Nächste Karte</button>
+            <button id="restartBtn" type="button">Neu starten</button>
           </div>
-
-          <div id="customSearchResults"></div>
-        </div>
+        </footer>
       </section>
+
+      <aside id="optionsContainer">
+        <h3>Antwortbausteine</h3>
+        <div id="optionsList"></div>
+      </aside>
     </main>
 
-    <footer>
-      <div id="cardCounter"></div>
-      <div id="feedback"></div>
+    <main id="customMain" class="hidden">
+      <section class="custom-section">
+        <h3>Eigenes Lernen</h3>
+        <p>Suche nach einem exakten Begriff, z. B. Pflanzenname, Inhaltsstoff oder Wirkung.</p>
 
-      <div class="nav-buttons">
-        <button id="checkBtn" type="button">Prüfen</button>
-        <button id="nextBtn" type="button" disabled>Nächste Karte</button>
-        <button id="restartBtn" type="button">Neu starten</button>
-      </div>
-    </footer>
+        <input
+          type="text"
+          id="customSearchInput"
+          placeholder="Begriff eingeben"
+          autocomplete="off"
+        />
+
+        <div class="nav-buttons">
+          <button id="customSearchBtn" type="button">Suchen</button>
+          <button id="customBackBtn" type="button">Zur Startseite</button>
+        </div>
+
+        <div id="customSearchResults"></div>
+      </section>
+    </main>
   </section>
 
   <script src="script.js"></script>
