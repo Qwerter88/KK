@@ -878,3 +878,52 @@ body.trace-element-mode label[for="levelSelect"] {
     grid-template-columns: 1fr;
   }
 }
+
+/* Beschreibungen der Mikronährstoff-Quizze */
+
+.micronutrient-choice {
+  flex: 1 1 220px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.micronutrient-choice .micronutrient-btn {
+  width: 100%;
+}
+
+.micronutrient-desc {
+  margin: 8px 0 0 0;
+  min-height: 40px;
+  font-size: 0.85rem;
+  color: #333;
+  text-align: center;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Kleine Karten für die Mikronährstoff-Lernmodi */
+
+.micronutrient-card {
+  background-color: #f7f9ff;
+  border-radius: 8px;
+  padding: 12px 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.micronutrient-card .micronutrient-btn {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.micronutrient-card .micronutrient-desc {
+  margin: 0;
+  min-height: 72px;
+}
