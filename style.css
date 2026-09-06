@@ -785,3 +785,96 @@ body.vitamin-mode label[for="levelSelect"] {
     margin-right: 0;
   }
 }
+
+/* Spurenelemente-Lernen */
+
+body.trace-element-mode header {
+  background-color: #b85f17;
+}
+
+body.trace-element-mode .top-bar button,
+body.trace-element-mode .nav-buttons button,
+body.trace-element-mode #backToLandingBtn {
+  background-color: #b85f17;
+}
+
+body.trace-element-mode #levelSelect,
+body.trace-element-mode label[for="levelSelect"] {
+  display: none;
+}
+
+.trace-element-quiz {
+  width: 100%;
+  background-color: #fff1df;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.12);
+}
+
+.trace-element-question {
+  padding: 18px;
+}
+
+.trace-element-question h2 {
+  margin: 0 0 16px 0;
+  color: #7a3d0d;
+  text-align: center;
+}
+
+.trace-element-group {
+  margin-bottom: 18px;
+  padding: 14px;
+  background-color: #fff8ef;
+  border: 1px solid #f0c99e;
+  border-radius: 6px;
+}
+
+.trace-element-group h3 {
+  margin: 0 0 4px 0;
+  color: #8a450f;
+  font-size: 1rem;
+}
+
+.trace-element-group p {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  color: #4c341f;
+}
+
+.trace-element-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 8px 12px;
+}
+
+.trace-element-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background-color: #fffdf9;
+  border: 1px solid #e5bd91;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.trace-element-option:has(input:checked) {
+  background-color: #ffe5c5;
+  border-color: #c16a24;
+}
+
+.trace-element-option.correct {
+  border-color: #2e8b57;
+  background-color: #ddf5dd;
+}
+
+.trace-element-option.incorrect {
+  border-color: #b22222;
+  background-color: #f8dada;
+}
+
+@media (max-width: 800px) {
+  .trace-element-options {
+    grid-template-columns: 1fr;
+  }
+}

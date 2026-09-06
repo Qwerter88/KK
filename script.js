@@ -1047,6 +1047,249 @@ const vitaminData = [
   }
 ];
 
+const traceElementData = [
+  {
+    element: "Eisen",
+    occurrence: [
+      "Fleisch",
+      "Getreideprodukte",
+      "Spinat",
+      "Mangold",
+      "Grünkohl",
+      "Erbsen",
+      "Linsen",
+      "Kichererbsen"
+    ],
+    effects: [
+      "Wichtig für Sauerstofftransport",
+      "Blutbildung",
+      "Energiestoffwechsel"
+    ],
+    deficiency: [
+      "Eisenmangelanämie",
+      "Müdigkeit",
+      "Leistungsabfall",
+      "Blässe"
+    ],
+    dose: [
+      "Männer 10 mg pro Tag",
+      "Frauen 15 mg pro Tag"
+    ]
+  },
+  {
+    element: "Jod",
+    occurrence: [
+      "Seefisch",
+      "Meerestiere",
+      "Eier",
+      "Milch",
+      "jodiertes Speisesalz"
+    ],
+    effects: [
+      "Bildung von Schilddrüsenhormonen",
+      "Stoffwechsel"
+    ],
+    deficiency: [
+      "Kropf",
+      "Schilddrüsenunterfunktion",
+      "Stoffwechselstörungen"
+    ],
+    dose: [
+      "200 µg pro Tag"
+    ]
+  },
+  {
+    element: "Zink",
+    occurrence: [
+      "Fleisch",
+      "Käse",
+      "Eier",
+      "Haferflocken",
+      "Nüsse",
+      "Hülsenfrüchte"
+    ],
+    effects: [
+      "Immunsystem",
+      "Wundheilung",
+      "Zellteilung",
+      "Wichtig für viele Enzyme"
+    ],
+    deficiency: [
+      "Wundheilungsstörungen",
+      "erhöhte Infektanfälligkeit",
+      "Hautprobleme"
+    ],
+    dose: [
+      "ca. 7–16 mg pro Tag"
+    ]
+  },
+  {
+    element: "Selen",
+    occurrence: [
+      "Meeresfrüchte",
+      "Fisch",
+      "Fleisch",
+      "Leber",
+      "Getreide"
+    ],
+    effects: [
+      "Antioxidativer Zellschutz",
+      "Schilddrüsenfunktion",
+      "Immunsystem"
+    ],
+    deficiency: [
+      "Muskelschwäche",
+      "beeinträchtigte Schilddrüsenfunktion",
+      "erhöhte Infektanfälligkeit"
+    ],
+    dose: [
+      "Frauen 60 µg pro Tag",
+      "Männer 70 µg pro Tag"
+    ]
+  },
+  {
+    element: "Kupfer",
+    occurrence: [
+      "Nüsse",
+      "Samen",
+      "Vollkornprodukte",
+      "Kakao",
+      "Innereien"
+    ],
+    effects: [
+      "Eisenstoffwechsel",
+      "Bindegewebe",
+      "Nervensystem",
+      "Enzyme"
+    ],
+    deficiency: [
+      "Anämie",
+      "Störungen des Bindegewebes",
+      "neurologische Beschwerden"
+    ],
+    dose: [
+      "etwa 1–1,5 mg pro Tag"
+    ]
+  },
+  {
+    element: "Mangan",
+    occurrence: [
+      "Vollkornprodukte",
+      "Nüsse",
+      "Hülsenfrüchte",
+      "grünes Gemüse"
+    ],
+    effects: [
+      "Knochenaufbau",
+      "Enzymfunktionen",
+      "Stoffwechselprozesse"
+    ],
+    deficiency: [
+      "Störungen des Knochenstoffwechsels",
+      "unspezifische Stoffwechselstörungen"
+    ],
+    dose: [
+      "2–5 mg pro Tag"
+    ]
+  },
+  {
+    element: "Chrom",
+    occurrence: [
+      "Vollkornprodukte",
+      "Fleisch",
+      "Käse",
+      "Nüsse"
+    ],
+    effects: [
+      "Beteiligung am Kohlenhydratstoffwechsel",
+      "Wirkung von Insulin"
+    ],
+    deficiency: [
+      "Störungen des Glukosestoffwechsels"
+    ],
+    dose: [
+      "etwa 50–200 µg pro Tag"
+    ]
+  },
+  {
+    element: "Molybdän",
+    occurrence: [
+      "Hülsenfrüchte",
+      "Getreide",
+      "Innereien"
+    ],
+    effects: [
+      "Bestandteil von Enzymen",
+      "Abbau schwefelhaltiger Aminosäuren",
+      "Stoffwechselprozesse"
+    ],
+    deficiency: [
+      "Beim Menschen sehr selten",
+      "Starke Stoffwechselstörungen bei schwerem Mangel"
+    ],
+    dose: [
+      "etwa 50–100 µg pro Tag"
+    ]
+  },
+  {
+    element: "Fluorid",
+    occurrence: [
+      "Trinkwasser",
+      "schwarzer Tee",
+      "Seefisch",
+      "fluoridiertes Speisesalz"
+    ],
+    effects: [
+      "Zahnschmelz",
+      "Kariesprophylaxe",
+      "Beitrag zur Knochenhärtung"
+    ],
+    deficiency: [
+      "Erhöhte Kariesanfälligkeit"
+    ],
+    dose: [
+      "etwa 3–4 mg pro Tag"
+    ]
+  },
+  {
+    element: "Kobalt",
+    occurrence: [
+      "Vitamin B12 in tierischen Lebensmitteln"
+    ],
+    effects: [
+      "Bestandteil von Vitamin B12",
+      "wichtig für Blutbildung und Nervensystem"
+    ],
+    deficiency: [
+      "Vitamin-B12-Mangel",
+      "Anämie",
+      "neurologische Störungen"
+    ],
+    dose: [
+      "ca. 0,2–0,4 µg Kobalt pro Tag"
+    ]
+  },
+  {
+    element: "Nickel",
+    occurrence: [
+      "Nüsse",
+      "Hülsenfrüchte",
+      "Kakao",
+      "Vollkornprodukte"
+    ],
+    effects: [
+      "Essenzielle Rolle beim Menschen noch nicht klar gesichert",
+      "Unterstützt vermutlich Stoffwechselvorgänge"
+    ],
+    deficiency: [
+      "Eindeutige Mangelerkrankungen beim Menschen nicht klar definiert"
+    ],
+    dose: [
+      "geschätzter Bedarf ca. 25–30 µg pro Tag"
+    ]
+  }
+];
+
 // ===================
 // Globale Zustände
 // ===================
@@ -1064,6 +1307,10 @@ let ingredientChecked = false;
 let vitaminQuestions = [];
 let currentVitaminQuestionIndex = 0;
 let vitaminChecked = false;
+
+let traceElementQuestions = [];
+let currentTraceElementQuestionIndex = 0;
+let traceElementChecked = false;
 
 // ===================
 // DOM-Elemente
@@ -1096,6 +1343,7 @@ const customSearchResults = document.getElementById("customSearchResults");
 const customBackBtn = document.getElementById("customBackBtn");
 const teacherLoginBtn = document.getElementById("teacherLoginBtn");
 const startVitaminBtn = document.getElementById("startVitaminBtn");
+const startTraceElementBtn = document.getElementById("startTraceElementBtn");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
 // ===================
@@ -1153,6 +1401,15 @@ if (startVitaminBtn) {
   });
 }
 
+if (startTraceElementBtn) {
+  startTraceElementBtn.addEventListener("click", () => {
+    currentMode = "trace-elements";
+    showApp();
+    showTraceElementLayout();
+    startTraceElementQuiz();
+  });
+}
+
 if (levelSelect) {
   levelSelect.addEventListener("change", () => {
     currentLevel = levelSelect.value;
@@ -1179,6 +1436,11 @@ if (checkBtn) {
       return;
     }
 
+    if (currentMode === "trace-elements") {
+      checkTraceElementAnswer();
+      return;
+    }
+
     checkCurrentCard();
   });
 }
@@ -1195,6 +1457,11 @@ if (nextBtn) {
       return;
     }
 
+    if (currentMode === "trace-elements") {
+      goToNextTraceElementQuestion();
+      return;
+    }
+
     goToNextCard();
   });
 }
@@ -1208,6 +1475,11 @@ if (restartBtn) {
 
     if (currentMode === "vitamins") {
       startVitaminQuiz();
+      return;
+    }
+
+    if (currentMode === "trace-elements") {
+      startTraceElementQuiz();
       return;
     }
 
@@ -1268,6 +1540,7 @@ function setFeedback(message, ok = true) {
 
 function showLanding() {
   document.body.classList.remove("vitamin-mode");
+  document.body.classList.remove("trace-element-mode");
 
   landing.classList.remove("hidden");
   app.classList.add("hidden");
@@ -1407,6 +1680,16 @@ function getCurrentCard() {
 
 function updateCardCounter() {
   if (!cardCounter) return;
+
+  if (currentMode === "trace-elements") {
+    if (!traceElementQuestions.length) {
+      cardCounter.textContent = "";
+      return;
+    }
+
+    cardCounter.textContent = `Frage ${currentTraceElementQuestionIndex + 1}`;
+    return;
+  }
 
   if (currentMode === "vitamins") {
     if (!vitaminQuestions.length) {
@@ -2416,6 +2699,373 @@ function goToNextVitaminQuestion() {
 
   vitaminChecked = false;
   renderVitaminQuestion();
+}
+
+// ===================
+// Spurenelemente-Quiz
+// ===================
+
+function getTraceElementPool(key) {
+  return [
+    ...new Set(
+      traceElementData.flatMap((item) => item[key] || [])
+    )
+  ];
+}
+
+function getTraceElementQuestionRule(elementName, category) {
+  const rules = {
+    Jod: {
+      effects: 2
+    },
+    Mangan: {
+      deficiency: 2
+    },
+    Chrom: {
+      effects: 2,
+      deficiency: 1
+    },
+    Molybdän: {
+      deficiency: 2
+    },
+    Fluorid: {
+      deficiency: 1
+    },
+    Kobalt: {
+      occurrence: 1,
+      effects: 2
+    },
+    Nickel: {
+      effects: 2,
+      deficiency: 1
+    },
+    Eisen: {
+      dose: 2
+    },
+    Selen: {
+      dose: 2
+    }
+  };
+
+  if (category === "dose") {
+    return rules[elementName]?.dose || 1;
+  }
+
+  return rules[elementName]?.[category] || 3;
+}
+
+function buildTraceElementQuestions() {
+  const occurrencePool = getTraceElementPool("occurrence");
+  const effectPool = getTraceElementPool("effects");
+  const deficiencyPool = getTraceElementPool("deficiency");
+  const dosePool = getTraceElementPool("dose");
+
+  return traceElementData.map((item) => {
+    const occurrenceCount = getTraceElementQuestionRule(item.element, "occurrence");
+    const effectCount = getTraceElementQuestionRule(item.element, "effects");
+    const deficiencyCount = getTraceElementQuestionRule(item.element, "deficiency");
+    const doseCount = getTraceElementQuestionRule(item.element, "dose");
+
+    const correctOccurrence = getRandomItems(item.occurrence, occurrenceCount);
+    const correctEffects = getRandomItems(item.effects, effectCount);
+    const correctDeficiency = getRandomItems(item.deficiency, deficiencyCount);
+    const correctDose = getRandomItems(item.dose, doseCount);
+
+    const wrongOccurrence = getRandomItems(
+      occurrencePool,
+      occurrenceCount,
+      item.occurrence
+    );
+
+    const wrongEffects = getRandomItems(
+      effectPool,
+      effectCount,
+      item.effects
+    );
+
+    const wrongDeficiency = getRandomItems(
+      deficiencyPool,
+      deficiencyCount,
+      item.deficiency
+    );
+
+    const wrongDose = getRandomItems(
+      dosePool,
+      doseCount,
+      item.dose
+    );
+
+    return {
+      element: item.element,
+
+      occurrenceCorrect: correctOccurrence,
+      occurrenceOptions: shuffleArray([
+        ...correctOccurrence,
+        ...wrongOccurrence
+      ]),
+
+      effectsCorrect: correctEffects,
+      effectsOptions: shuffleArray([
+        ...correctEffects,
+        ...wrongEffects
+      ]),
+
+      deficiencyCorrect: correctDeficiency,
+      deficiencyOptions: shuffleArray([
+        ...correctDeficiency,
+        ...wrongDeficiency
+      ]),
+
+      doseCorrect: correctDose,
+      doseOptions: shuffleArray([
+        ...correctDose,
+        ...wrongDose
+      ])
+    };
+  });
+}
+
+function startTraceElementQuiz() {
+  traceElementQuestions = shuffleArray(buildTraceElementQuestions());
+  currentTraceElementQuestionIndex = 0;
+  traceElementChecked = false;
+  renderTraceElementQuestion();
+}
+
+function showTraceElementLayout() {
+  document.body.classList.remove("vitamin-mode");
+  document.body.classList.add("trace-element-mode");
+
+  quizMain.classList.remove("hidden");
+  customMain.classList.add("hidden");
+  quizTopBar.classList.remove("hidden");
+
+  appTitle.textContent = "Spurenelemente-Lernen – Multiple-Choice-Quiz";
+
+  if (backToLandingBtn) backToLandingBtn.classList.remove("hidden");
+  if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+  if (optionsContainer) optionsContainer.classList.add("hidden");
+}
+
+function renderTraceElementOption(group, option, correctOptions) {
+  const isCorrect = correctOptions.includes(option);
+
+  return `
+    <label class="trace-element-option" data-group="${group}" data-correct="${isCorrect}">
+      <input type="checkbox" value="${escapeHtml(option)}">
+      <span>${escapeHtml(option)}</span>
+    </label>
+  `;
+}
+
+function renderTraceElementQuestion() {
+  clearFeedback();
+
+  const q = traceElementQuestions[currentTraceElementQuestionIndex];
+
+  if (!q) {
+    cardContainer.innerHTML = "<p>Keine Fragen zu Spurenelementen vorhanden.</p>";
+    return;
+  }
+
+  if (checkBtn) {
+    checkBtn.classList.remove("hidden");
+    checkBtn.textContent = "Überprüfen";
+  }
+
+  if (nextBtn) {
+    nextBtn.classList.remove("hidden");
+    nextBtn.textContent = "Nächste Karte";
+    nextBtn.disabled = true;
+  }
+
+  if (restartBtn) {
+    restartBtn.classList.remove("hidden");
+    restartBtn.textContent = "Neu starten";
+  }
+
+  updateCardCounter();
+
+  cardContainer.innerHTML = `
+    <section class="trace-element-quiz">
+      <div class="trace-element-question">
+        <h2>${escapeHtml(q.element)}</h2>
+
+        <div class="trace-element-group">
+          <h3>Vorkommen</h3>
+          <p>Wähle die passenden Vorkommen aus.</p>
+          <div class="trace-element-options">
+            ${q.occurrenceOptions
+              .map((option) =>
+                renderTraceElementOption(
+                  "occurrence",
+                  option,
+                  q.occurrenceCorrect
+                )
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="trace-element-group">
+          <h3>Wirkung</h3>
+          <p>Wähle die passenden Wirkungen aus.</p>
+          <div class="trace-element-options">
+            ${q.effectsOptions
+              .map((option) =>
+                renderTraceElementOption(
+                  "effects",
+                  option,
+                  q.effectsCorrect
+                )
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="trace-element-group">
+          <h3>Erkrankung / Mangelerscheinung</h3>
+          <p>Wähle die passenden Erkrankungen oder Mangelerscheinungen aus.</p>
+          <div class="trace-element-options">
+            ${q.deficiencyOptions
+              .map((option) =>
+                renderTraceElementOption(
+                  "deficiency",
+                  option,
+                  q.deficiencyCorrect
+                )
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="trace-element-group">
+          <h3>Empfohlene Tagesdosis für Erwachsene</h3>
+          <p>Wähle die passende empfohlene Tagesdosis aus.</p>
+          <div class="trace-element-options">
+            ${q.doseOptions
+              .map((option) =>
+                renderTraceElementOption(
+                  "dose",
+                  option,
+                  q.doseCorrect
+                )
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function checkTraceElementAnswer() {
+  const q = traceElementQuestions[currentTraceElementQuestionIndex];
+
+  if (!q) return;
+
+  const groups = [
+    {
+      name: "occurrence",
+      required: q.occurrenceCorrect.length
+    },
+    {
+      name: "effects",
+      required: q.effectsCorrect.length
+    },
+    {
+      name: "deficiency",
+      required: q.deficiencyCorrect.length
+    },
+    {
+      name: "dose",
+      required: q.doseCorrect.length
+    }
+  ];
+
+  let allCorrect = true;
+  let somethingSelected = false;
+
+  groups.forEach((group) => {
+    const options = cardContainer.querySelectorAll(
+      `.trace-element-option[data-group="${group.name}"]`
+    );
+
+    const selectedCorrect = [];
+    const selectedIncorrect = [];
+    const unselectedCorrect = [];
+
+    options.forEach((option) => {
+      const checkbox = option.querySelector("input");
+      const isCorrect = option.dataset.correct === "true";
+      const isChecked = checkbox.checked;
+
+      option.classList.remove("correct", "incorrect");
+
+      if (isChecked) {
+        somethingSelected = true;
+      }
+
+      if (isCorrect && isChecked) {
+        selectedCorrect.push(option);
+      } else if (!isCorrect && isChecked) {
+        selectedIncorrect.push(option);
+      } else if (isCorrect && !isChecked) {
+        unselectedCorrect.push(option);
+      }
+    });
+
+    selectedCorrect.forEach((option) => {
+      option.classList.add("correct");
+    });
+
+    selectedIncorrect.forEach((option) => {
+      option.classList.add("incorrect");
+      allCorrect = false;
+    });
+
+    unselectedCorrect.forEach((option) => {
+      option.classList.add("incorrect");
+      allCorrect = false;
+    });
+
+    if (selectedCorrect.length !== group.required) {
+      allCorrect = false;
+    }
+  });
+
+  if (!somethingSelected) {
+    setFeedback("Bitte wähle mindestens eine Antwort aus.", false);
+    return;
+  }
+
+  traceElementChecked = true;
+
+  if (allCorrect) {
+    setFeedback("Richtig! Gut gemacht.", true);
+  } else {
+    setFeedback("Noch nicht ganz richtig.", false);
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = false;
+  }
+}
+
+function goToNextTraceElementQuestion() {
+  currentTraceElementQuestionIndex += 1;
+
+  if (currentTraceElementQuestionIndex >= traceElementQuestions.length) {
+    setFeedback(
+      "Du bist am Ende des Spurenelemente-Quiz angekommen. Starte gerne neu.",
+      true
+    );
+    startTraceElementQuiz();
+    return;
+  }
+
+  traceElementChecked = false;
+  renderTraceElementQuestion();
 }
 
 // ===================
