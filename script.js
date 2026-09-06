@@ -629,6 +629,7 @@ if (backToLandingBtn) {
   backToLandingBtn.addEventListener("click", () => {
     resetToLandingState();
     showLanding();
+    enablePlacedAnswerRemoval();
   });
 }
 
@@ -994,6 +995,41 @@ function renderOptionsForCard(card) {
   enableOptionsDropback();
 }
 
+function enablePlacedAnswerRemoval() {
+  if (!cardContainer || !optionsList) return;
+
+  cardContainer.addEventListener("click", (event) => {
+    const placedAnswer = event.target.closest(".dropzone .option-item");
+
+    if (!placedAnswer) return;
+
+    const dropzone = placedAnswer.closest(".dropzone");
+    if (!dropzone) return;
+
+    const currentCard = getCurrentCard();
+    if (!currentCard) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    placedAnswer.classList.remove("dragging", "selected");
+    placedAnswer.removeAttribute("draggable");
+
+    optionsList.appendChild(placedAnswer);
+
+    dropzone.classList.remove("correct", "incorrect", "over");
+
+    if (feedback) {
+      feedback.textContent = "";
+      feedback.className = "";
+    }
+
+    if (nextBtn) {
+      nextBtn.disabled = true;
+    }
+  });
+}
+
 function renderCardWithInputs(card) {
   const groups = [
     { key: "drogenParts", label: "Droge" },
@@ -1103,20 +1139,39 @@ function enableDropzones() {
       zone.innerHTML = "";
       zone.appendChild(item);
       item.classList.remove("selected");
+      zone.classList.remove("correct", "incorrect");
     });
 
     zone.addEventListener("click", () => {
       const selected = document.querySelector(".option-item.selected");
-      if (!selected) return;
 
-      const existing = zone.querySelector(".option-item");
-      if (existing && existing !== selected) {
-        optionsList.appendChild(existing);
+      if (selected) {
+        const existing = zone.querySelector(".option-item");
+
+        if (existing && existing !== selected) {
+          optionsList.appendChild(existing);
+        }
+
+        zone.innerHTML = "";
+        zone.appendChild(selected);
+        selected.classList.remove("selected");
+        zone.classList.remove("correct", "incorrect");
+        return;
       }
 
+      const placedItem = zone.querySelector(".option-item");
+
+      if (!placedItem) return;
+
+      optionsList.appendChild(placedItem);
       zone.innerHTML = "";
-      zone.appendChild(selected);
-      selected.classList.remove("selected");
+      zone.classList.remove("correct", "incorrect", "over");
+
+      clearFeedback();
+
+      if (nextBtn) {
+        nextBtn.disabled = true;
+      }
     });
   });
 }
@@ -1168,10 +1223,10 @@ function checkDropzones() {
 
     groupZones.forEach((zone) => {
       const expected = (zone.dataset.answer || "").trim().toLowerCase();
-      const placedItem = zone.querySelector(".option-item");
-      const value = placedItem ? placedItem.textContent.trim().toLowerCase() : "";
+      const placed = zone.querySelector(".option-item");
+      const actual = placed ? placed.textContent.trim().toLowerCase() : "";
 
-      if (value === expected) {
+      if (actual && actual === expected) {
         zone.classList.add("correct");
       } else {
         zone.classList.add("incorrect");
@@ -1182,37 +1237,56 @@ function checkDropzones() {
 
   freeOrderGroups.forEach((groupName) => {
     const groupZones = zones.filter((zone) => zone.dataset.group === groupName);
-    const expectedValues = groupZones
+
+    const validAnswersForGroup = groupZones
       .map((zone) => (zone.dataset.answer || "").trim().toLowerCase())
       .filter(Boolean);
 
-    const placedValues = groupZones
-      .map((zone) => {
-        const placedItem = zone.querySelector(".option-item");
-        return placedItem ? placedItem.textContent.trim().toLowerCase() : "";
-      })
-      .filter(Boolean);
+    const placedValues = [];
 
-    const expectedSorted = [...expectedValues].sort();
+    groupZones.forEach((zone) => {
+      const placed = zone.querySelector(".option-item");
+      const actual = placed ? placed.textContent.trim().toLowerCase() : "";
+
+      if (!actual) {
+        zone.classList.add("incorrect");
+        allCorrect = false;
+        return;
+      }
+
+      if (validAnswersForGroup.includes(actual)) {
+        zone.classList.add("correct");
+        placedValues.push(actual);
+      } else {
+        zone.classList.add("incorrect");
+        allCorrect = false;
+      }
+    });
+
+    const expectedSorted = [...validAnswersForGroup].sort();
     const placedSorted = [...placedValues].sort();
 
-    const sameLength = expectedSorted.length === placedSorted.length;
-    const sameValues = sameLength && expectedSorted.every((value, index) => value === placedSorted[index]);
+    const hasAllRequiredAnswers =
+      expectedSorted.length === placedSorted.length &&
+      expectedSorted.every((value, index) => value === placedSorted[index]);
 
-    if (sameValues) {
-      groupZones.forEach((zone) => zone.classList.add("correct"));
-    } else {
-      groupZones.forEach((zone) => zone.classList.add("incorrect"));
+    if (!hasAllRequiredAnswers) {
       allCorrect = false;
     }
   });
 
   if (allCorrect) {
     setFeedback("Richtig! Gut gemacht.", true);
-    if (nextBtn) nextBtn.disabled = false;
+
+    if (nextBtn) {
+      nextBtn.disabled = false;
+    }
   } else {
     setFeedback("Einige Antworten stimmen noch nicht.", false);
-    if (nextBtn) nextBtn.disabled = true;
+
+    if (nextBtn) {
+      nextBtn.disabled = true;
+    }
   }
 }
 
