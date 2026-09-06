@@ -953,6 +953,100 @@ const baseCards = [
   },
 ];
 
+const vitaminData = [
+  {
+    vitamin: "Vitamin A",
+    solubility: "fettlöslich",
+    names: ["Retinol"],
+    foodSources: ["Leber", "Karotten", "Grünkohl", "Spinat", "Eier", "Milchprodukte"],
+    functions: ["Sehvorgang", "Haut und Schleimhäute", "Immunsystem", "Wachstum"]
+  },
+  {
+    vitamin: "Vitamin D",
+    solubility: "fettlöslich",
+    names: ["Calciferole"],
+    foodSources: ["Fettreiche Fische", "Eigelb", "Pilze", "Gouda"],
+    functions: ["Reguliert den Calcium- und Phosphathaushalt", "Knochen, Zähne, Muskeln", "Immunsystem"]
+  },
+  {
+    vitamin: "Vitamin E",
+    solubility: "fettlöslich",
+    names: ["Tocopherole"],
+    foodSources: ["Pflanzenöle", "Nüsse", "Samen", "Mandeln", "Eier", "Butter"],
+    functions: ["Wirkt als Antioxidans", "schützt Zellmembranen"]
+  },
+  {
+    vitamin: "Vitamin K1/K2",
+    solubility: "fettlöslich",
+    names: ["Phyllochinon", "Menachinon"],
+    foodSources: ["Grünkohl", "Spinat", "grünes Gemüse"],
+    functions: ["Blutgerinnung", "Knochenstoffwechsel"]
+  },
+  {
+    vitamin: "Vitamin B1",
+    solubility: "wasserlöslich",
+    names: ["Thiamin"],
+    foodSources: ["Vollkornprodukte", "Hülsenfrüchte", "Schweinefleisch", "Kartoffeln"],
+    functions: ["Energiestoffwechsel", "Nervensystem", "Herzfunktion"]
+  },
+  {
+    vitamin: "Vitamin B2",
+    solubility: "wasserlöslich",
+    names: ["Riboflavin"],
+    foodSources: ["Milch und Milchprodukte", "Fleisch", "Fisch", "grünes Gemüse", "Vollkornprodukte"],
+    functions: ["Energiestoffwechsel", "Haut und Schleimhäute", "Sehkraft", "Zellschutz"]
+  },
+  {
+    vitamin: "Vitamin B3",
+    solubility: "wasserlöslich",
+    names: ["Niacin"],
+    foodSources: ["Fisch", "Fleisch", "Innereien", "Bohnenkaffee"],
+    functions: ["Energiestoffwechsel", "Auf- und Abbau von Kohlenhydraten", "Auf- und Abbau von Fettsäuren und Aminosäuren"]
+  },
+  {
+    vitamin: "Vitamin B5",
+    solubility: "wasserlöslich",
+    names: ["Pantothensäure"],
+    foodSources: ["Fleisch", "Fisch", "Nüsse", "Vollkornlebensmittel"],
+    functions: ["Bestandteil von Coenzym A", "Energiestoffwechsel", "Hormon- und Botenstoffbildung"]
+  },
+  {
+    vitamin: "Vitamin B6",
+    solubility: "wasserlöslich",
+    names: ["Pyridoxin"],
+    foodSources: ["Kartoffeln", "Vollkorngetreide", "Bananen", "Nüsse", "Leber"],
+    functions: ["Eiweiß- und Aminosäurenstoffwechsel", "Blutbildung", "Nervensystem"]
+  },
+  {
+    vitamin: "Vitamin B7",
+    solubility: "wasserlöslich",
+    names: ["Biotin"],
+    foodSources: ["Eigelb", "Haferflocken", "Sojabohnen", "Naturreis", "Erdnüsse"],
+    functions: ["Stoffwechsel von Fettsäuren", "Stoffwechsel von Aminosäuren und Glukose", "Haut und Haare"]
+  },
+  {
+    vitamin: "Vitamin B9",
+    solubility: "wasserlöslich",
+    names: ["Folsäure / Folat"],
+    foodSources: ["Grünes Blattgemüse", "Hülsenfrüchte", "Vollkornprodukte", "Weizenkeime"],
+    functions: ["Zellteilung", "DNA-Synthese", "Blutbildung", "besonders wichtig in der Schwangerschaft"]
+  },
+  {
+    vitamin: "Vitamin B12",
+    solubility: "wasserlöslich",
+    names: ["Cobalamin"],
+    foodSources: ["Fleisch", "Fisch", "Milchprodukte", "Eier", "Leber"],
+    functions: ["Blutbildung", "Zellteilung", "Nervenfunktion"]
+  },
+  {
+    vitamin: "Vitamin C",
+    solubility: "wasserlöslich",
+    names: ["Ascorbinsäure"],
+    foodSources: ["Zitrusfrüchte", "Paprika", "Brokkoli", "Erdbeeren", "Kiwi"],
+    functions: ["Kollagensynthese", "Aufbau und Erhalt von Bindegewebe, Knochen, Knorpel, Zahnfleisch und Blutgefäßen", "Wundheilung und Gewebereparatur", "Unterstützt das Immunsystem", "Antioxidans und regeneriert andere Antioxidanzien wie Vitamin E", "Verbessert die Aufnahme von Eisen aus pflanzlichen Lebensmitteln"]
+  }
+];
+
 // ===================
 // Globale Zustände
 // ===================
@@ -967,6 +1061,9 @@ let searchCardId = null;
 let ingredientQuestions = [];
 let currentIngredientQuestionIndex = 0;
 let ingredientChecked = false;
+let vitaminQuestions = [];
+let currentVitaminQuestionIndex = 0;
+let vitaminChecked = false;
 
 // ===================
 // DOM-Elemente
@@ -998,6 +1095,7 @@ const customSearchResults = document.getElementById("customSearchResults");
 
 const customBackBtn = document.getElementById("customBackBtn");
 const teacherLoginBtn = document.getElementById("teacherLoginBtn");
+const startVitaminBtn = document.getElementById("startVitaminBtn");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
 // ===================
@@ -1046,6 +1144,15 @@ modeButtons.forEach((btn) => {
   });
 });
 
+if (startVitaminBtn) {
+  startVitaminBtn.addEventListener("click", () => {
+    currentMode = "vitamins";
+    showApp();
+    showVitaminLayout();
+    startVitaminQuiz();
+  });
+}
+
 if (levelSelect) {
   levelSelect.addEventListener("change", () => {
     currentLevel = levelSelect.value;
@@ -1067,6 +1174,11 @@ if (checkBtn) {
       return;
     }
 
+    if (currentMode === "vitamins") {
+      checkVitaminAnswer();
+      return;
+    }
+
     checkCurrentCard();
   });
 }
@@ -1075,6 +1187,11 @@ if (nextBtn) {
   nextBtn.addEventListener("click", () => {
     if (currentMode === "ingredient") {
       goToNextIngredientQuestion();
+      return;
+    }
+
+    if (currentMode === "vitamins") {
+      goToNextVitaminQuestion();
       return;
     }
 
@@ -1089,12 +1206,20 @@ if (restartBtn) {
       return;
     }
 
+    if (currentMode === "vitamins") {
+      startVitaminQuiz();
+      return;
+    }
+
     initLevel();
   });
 }
 
 if (backToLandingBtn) {
   backToLandingBtn.addEventListener("click", () => {
+    vitaminQuestions = [];
+    currentVitaminQuestionIndex = 0;
+    vitaminChecked = false;    
     resetToLandingState();
     showLanding();
     enablePlacedAnswerRemoval();
@@ -1142,6 +1267,8 @@ function setFeedback(message, ok = true) {
 }
 
 function showLanding() {
+  document.body.classList.remove("vitamin-mode");
+
   landing.classList.remove("hidden");
   app.classList.add("hidden");
   clearFeedback();
@@ -1280,6 +1407,16 @@ function getCurrentCard() {
 
 function updateCardCounter() {
   if (!cardCounter) return;
+
+  if (currentMode === "vitamins") {
+    if (!vitaminQuestions.length) {
+      cardCounter.textContent = "";
+      return;
+    }
+
+    cardCounter.textContent = `Frage ${currentVitaminQuestionIndex + 1}`;
+    return;
+  }
 
   if (currentMode === "ingredient") {
     if (!ingredientQuestions.length) {
@@ -2023,6 +2160,262 @@ function goToNextIngredientQuestion() {
 
   ingredientChecked = false;
   renderIngredientQuestion();
+}
+
+// ===================
+// Vitamin-Quiz
+// ===================
+
+function getVitaminFoodPool() {
+  return [...new Set(vitaminData.flatMap((item) => item.foodSources))];
+}
+
+function getVitaminFunctionPool() {
+  return [...new Set(vitaminData.flatMap((item) => item.functions))];
+}
+
+function getVitaminNamePool() {
+  return [...new Set(vitaminData.flatMap((item) => item.names))];
+}
+
+function getRandomItems(items, count, excluded = []) {
+  const available = items.filter((item) => !excluded.includes(item));
+  return shuffleArray(available).slice(0, count);
+}
+
+function buildVitaminQuestions() {
+  const foodPool = getVitaminFoodPool();
+  const functionPool = getVitaminFunctionPool();
+  const namePool = getVitaminNamePool();
+
+  return vitaminData.map((vitamin) => {
+    const correctNames = vitamin.names;
+    const correctFoods = getRandomItems(vitamin.foodSources, 2);
+    const correctFunctions = getRandomItems(vitamin.functions, 2);
+
+    const nameWrongCount = vitamin.vitamin === "Vitamin K1/K2" ? 2 : 1;
+    const wrongNames = getRandomItems(namePool, nameWrongCount, correctNames);
+
+    const wrongFoods = getRandomItems(foodPool, 2, vitamin.foodSources);
+    const wrongFunctions = getRandomItems(functionPool, 2, vitamin.functions);
+
+    return {
+      vitamin: vitamin.vitamin,
+      solubility: vitamin.solubility,
+      correctSolubility: [vitamin.solubility],
+      solubilityOptions: shuffleArray(["fettlöslich", "wasserlöslich"]),
+
+      correctNames,
+      nameOptions: shuffleArray([...correctNames, ...wrongNames]),
+
+      correctFoods,
+      foodOptions: shuffleArray([...correctFoods, ...wrongFoods]),
+
+      correctFunctions,
+      functionOptions: shuffleArray([...correctFunctions, ...wrongFunctions])
+    };
+  });
+}
+
+function startVitaminQuiz() {
+  vitaminQuestions = shuffleArray(buildVitaminQuestions());
+  currentVitaminQuestionIndex = 0;
+  vitaminChecked = false;
+  renderVitaminQuestion();
+}
+
+function showVitaminLayout() {
+  document.body.classList.add("vitamin-mode");
+
+  quizMain.classList.remove("hidden");
+  customMain.classList.add("hidden");
+  quizTopBar.classList.remove("hidden");
+
+  appTitle.textContent = "Vitamin-Lernen – Multiple-Choice-Quiz";
+
+  if (backToLandingBtn) backToLandingBtn.classList.remove("hidden");
+  if (backToSearchBtn) backToSearchBtn.classList.add("hidden");
+  if (optionsContainer) optionsContainer.classList.add("hidden");
+}
+
+function renderVitaminOption(group, option, correctOptions) {
+  const isCorrect = correctOptions.includes(option);
+
+  return `
+    <label class="vitamin-option" data-group="${group}" data-correct="${isCorrect}">
+      <input type="checkbox" value="${escapeHtml(option)}">
+      <span>${escapeHtml(option)}</span>
+    </label>
+  `;
+}
+
+function renderVitaminQuestion() {
+  clearFeedback();
+
+  const q = vitaminQuestions[currentVitaminQuestionIndex];
+
+  if (!q) {
+    cardContainer.innerHTML = "<p>Keine Vitaminfragen vorhanden.</p>";
+    return;
+  }
+
+  if (checkBtn) {
+    checkBtn.classList.remove("hidden");
+    checkBtn.textContent = "Überprüfen";
+  }
+
+  if (nextBtn) {
+    nextBtn.classList.remove("hidden");
+    nextBtn.textContent = "Nächste Karte";
+    nextBtn.disabled = true;
+  }
+
+  if (restartBtn) {
+    restartBtn.classList.remove("hidden");
+    restartBtn.textContent = "Neu starten";
+  }
+
+  updateCardCounter();
+
+  cardContainer.innerHTML = `
+    <section class="vitamin-quiz">
+      <div class="vitamin-question">
+        <h2>${escapeHtml(q.vitamin)}</h2>
+
+        <div class="vitamin-group">
+          <h3>Löslichkeit</h3>
+          <p>Ist dieses Vitamin wasserlöslich oder fettlöslich?</p>
+          <div class="vitamin-options">
+            ${q.solubilityOptions
+              .map((option) => renderVitaminOption("solubility", option, q.correctSolubility))
+              .join("")}
+          </div>
+        </div>
+
+        <div class="vitamin-group">
+          <h3>Name</h3>
+          <p>Wie lautet der Name dieses Vitamins?</p>
+          <div class="vitamin-options">
+            ${q.nameOptions
+              .map((option) => renderVitaminOption("name", option, q.correctNames))
+              .join("")}
+          </div>
+        </div>
+
+        <div class="vitamin-group">
+          <h3>Lebensmittelquellen</h3>
+          <p>Wähle zwei passende Lebensmittelquellen aus.</p>
+          <div class="vitamin-options">
+            ${q.foodOptions
+              .map((option) => renderVitaminOption("food", option, q.correctFoods))
+              .join("")}
+          </div>
+        </div>
+
+        <div class="vitamin-group">
+          <h3>Funktionen</h3>
+          <p>Wähle zwei passende Funktionen aus.</p>
+          <div class="vitamin-options">
+            ${q.functionOptions
+              .map((option) => renderVitaminOption("function", option, q.correctFunctions))
+              .join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function checkVitaminAnswer() {
+  const q = vitaminQuestions[currentVitaminQuestionIndex];
+
+  if (!q) return;
+
+  const groups = [
+    { name: "solubility", required: 1 },
+    { name: "name", required: q.correctNames.length },
+    { name: "food", required: 2 },
+    { name: "function", required: 2 }
+  ];
+
+  let allCorrect = true;
+  let somethingSelected = false;
+
+  groups.forEach((group) => {
+    const options = cardContainer.querySelectorAll(
+      `.vitamin-option[data-group="${group.name}"]`
+    );
+
+    const selectedCorrect = [];
+    const selectedIncorrect = [];
+    const unselectedCorrect = [];
+
+    options.forEach((option) => {
+      const checkbox = option.querySelector("input");
+      const isCorrect = option.dataset.correct === "true";
+      const isChecked = checkbox.checked;
+
+      option.classList.remove("correct", "incorrect");
+
+      if (isChecked) {
+        somethingSelected = true;
+      }
+
+      if (isCorrect && isChecked) {
+        selectedCorrect.push(option);
+      } else if (!isCorrect && isChecked) {
+        selectedIncorrect.push(option);
+      } else if (isCorrect && !isChecked) {
+        unselectedCorrect.push(option);
+      }
+    });
+
+    selectedCorrect.forEach((option) => option.classList.add("correct"));
+
+    selectedIncorrect.forEach((option) => {
+      option.classList.add("incorrect");
+      allCorrect = false;
+    });
+
+    unselectedCorrect.forEach((option) => {
+      option.classList.add("incorrect");
+      allCorrect = false;
+    });
+
+    if (selectedCorrect.length !== group.required) {
+      allCorrect = false;
+    }
+  });
+
+  if (!somethingSelected) {
+    setFeedback("Bitte wähle mindestens eine Antwort aus.", false);
+    return;
+  }
+
+  vitaminChecked = true;
+
+  if (allCorrect) {
+    setFeedback("Richtig! Gut gemacht.", true);
+  } else {
+    setFeedback("Noch nicht ganz richtig.", false);
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = false;
+  }
+}
+
+function goToNextVitaminQuestion() {
+  currentVitaminQuestionIndex += 1;
+
+  if (currentVitaminQuestionIndex >= vitaminQuestions.length) {
+    setFeedback("Du bist am Ende des Vitamin-Quiz angekommen. Starte gerne neu.", true);
+    startVitaminQuiz();
+    return;
+  }
+
+  vitaminChecked = false;
+  renderVitaminQuestion();
 }
 
 // ===================
