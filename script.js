@@ -1112,6 +1112,27 @@ function enableDropzones() {
   const dropzones = cardContainer.querySelectorAll(".dropzone");
 
   dropzones.forEach((zone) => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function removePlacedItem() {
+      const placedItem = zone.querySelector(".option-item");
+
+      if (!placedItem) return false;
+
+      optionsList.appendChild(placedItem);
+      zone.innerHTML = "";
+      zone.classList.remove("correct", "incorrect", "over");
+
+      clearFeedback();
+
+      if (nextBtn) {
+        nextBtn.disabled = true;
+      }
+
+      return true;
+    }
+
     zone.addEventListener("dragover", (e) => {
       e.preventDefault();
       zone.classList.add("over");
@@ -1159,20 +1180,46 @@ function enableDropzones() {
         return;
       }
 
-      const placedItem = zone.querySelector(".option-item");
-
-      if (!placedItem) return;
-
-      optionsList.appendChild(placedItem);
-      zone.innerHTML = "";
-      zone.classList.remove("correct", "incorrect", "over");
-
-      clearFeedback();
-
-      if (nextBtn) {
-        nextBtn.disabled = true;
-      }
+      removePlacedItem();
     });
+
+    zone.addEventListener(
+      "touchstart",
+      (event) => {
+        if (!zone.querySelector(".option-item")) return;
+
+        const touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      },
+      { passive: true }
+    );
+
+    zone.addEventListener(
+      "touchend",
+      (event) => {
+        if (!zone.querySelector(".option-item")) return;
+
+        const touch = event.changedTouches[0];
+        const movedX = Math.abs(touch.clientX - touchStartX);
+        const movedY = Math.abs(touch.clientY - touchStartY);
+        const wasTap = movedX < 12 && movedY < 12;
+
+        if (!wasTap) return;
+
+        const selected = document.querySelector(".option-item.selected");
+
+        if (selected) return;
+
+        const removed = removePlacedItem();
+
+        if (removed) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      { passive: false }
+    );
   });
 }
 
