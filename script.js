@@ -430,10 +430,10 @@ const baseCards = [
     drogenParts: ["Rosmarinblätter", "Rosmarini", "folium"],
     stammpflanze1: "Rosmarin – Rosmarinus officinalis",
     familieParts: ["Lippenblütler", "Lamiaceae"],
-    inhaltsstoffe: ["Ätherische Öle", "Gerbstoffe", "Bitterstoffe"],
-    wirkung: ["durchblutungsfördernd", "spasmolytisch", "antiphlogistisch", "analgetisch"],
-    anwendung: ["Verdauungsbeschwerden", "Bäder bei rheumatischen Erkrankungen", "Einreibungen bei Erkältungen", "Einreibungen bei Kreislaufbeschwerden (niedriger Blutdruck)"],
-    warnhinweise: ["Vorsicht bei Hautverletzungen", "Vorsicht bei fieberhaften Erkrankungen", "Vorsicht bei Herzproblemen"]
+    inhaltsstoffe: ["Ätherisches Öl", "Lamiaceengerbstoffe", "Bitterstoffe"],
+    wirkung: ["durchblutungsfördernd", "spasmolytisch"],
+    anwendung: ["Verdauungsbeschwerden", "Bäder bei Kreislaufbeschwerden", "Gewürz", "Einreibungen bei bei rheumatischen Erkrankungen"],
+    warnhinweise: ["Vorsicht bei Hautverletzungen", "Vorsicht bei fieberhaften Erkrankungen", "Vorsicht bei Herzinsuffizienz", "Vorsicht bei Hypertonie!"]
   },
   {
     id: "ginkgo",
@@ -686,18 +686,6 @@ const baseCards = [
     wirkung: ["appetitanregend", "Anregung der Magensaftsekretion", "Steigerung der Bronchialsekretion"],
     anwendung: ["Zur Anregung des Appetits", "Selten bei Entzündung der Atemwege"],
     warnhinweise: ["Kontraindiziert bei Magen-Darmgeschwüren und bitterstoffempfindlichen Personen", "Species amaricantes", "Tinctura Absinthii", "Tinctura amara"]
-  },
-  {
-    id: "rosmarin",
-    germanName: "Rosmarin",
-    levels: ["einfach", "mittel", "schwer"],
-    drogenParts: ["Rosmarinblätter", "Rosmarini", "folium"],
-    stammpflanze1: "Rosmarin – Rosmarinus officinalis",
-    familieParts: ["Lippenblütler", "Lamiaceae"],
-    inhaltsstoffe: ["Ätherisches Öl", "Gerbstoffe", "Bitterstoffe"],
-    wirkung: ["spasmolytisch", "durchblutungsfördernd"],
-    anwendung: ["Bei Verdauungsbeschwerden", "Äußerlich zur Anregung der Durchblutung"],
-    warnhinweise: ["Nicht für Schwangere geeignet", "Unguentum aromaticum", "Species stomachicae I"]
   },
   {
     id: "kalmus",
@@ -2273,30 +2261,179 @@ function checkDropzones() {
   }
 }
 
+// ========================================
+// "Schwer": Schreibweisen und Synonyme
+// ========================================
+
+function normalizeHardAnswer(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " und ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+// Jede Zeile enthält ausdrücklich erlaubte gleichwertige Antworten.
+// Die Gleichsetzung gilt jeweils für eine vollständige Antwort,
+// nicht für einzelne Wörter innerhalb eines längeren Satzes.
+function getHardSynonymGroups(groupName) {
+  const groups = {
+    wirkung: [
+      ["antiphlogistisch", "entzündungshemmend", "antiinflammatorisch"],
+      ["spasmolytisch", "krampflösend"],
+      ["analgetisch", "schmerzlindernd"],
+      ["antipyretisch", "fiebersenkend"],
+      ["diuretisch", "harntreibend", "wassertreibend"],
+      ["diaphoretisch", "schweißtreibend"],
+      ["adstringierend", "zusammenziehend"],
+      ["sedativ", "sedierend", "beruhigend"],
+      ["anxiolytisch", "angstlösend"],
+      ["carminativ", "karminativ", "blähungstreibend"],
+      ["expektorierend", "auswurffördernd"],
+      ["antidiarrhoisch", "durchfallhemmend"],
+      ["antiemetisch", "gegen Übelkeit und Erbrechen"],
+      ["appetitanregend", "appetitfördernd"],
+      ["verdauungsfördernd", "verdauungsanregend"],
+      ["antioxidativ", "antioxidierend"]
+    ],
+
+    inhaltsstoffe: [
+      ["Ätherisches Öl", "Ätherische Öle"],
+      ["Fettes Öl", "Fette Öle"],
+      ["Cumarine", "Kumarine"],
+      ["Saponine", "Saponin"],
+      ["Gerbstoffe", "Tannine"]
+    ]
+  };
+
+  return groups[groupName] || [];
+}
+
+function hardAnswersMatch(actual, expected, groupName) {
+  const actualNormalized = normalizeHardAnswer(actual);
+  const expectedNormalized = normalizeHardAnswer(expected);
+
+  if (actualNormalized === expectedNormalized) {
+    return true;
+  }
+
+  if (!actualNormalized || !expectedNormalized) {
+    return false;
+  }
+
+  return getHardSynonymGroups(groupName).some((variants) => {
+    const normalizedVariants = variants.map(normalizeHardAnswer);
+
+    return (
+      normalizedVariants.includes(actualNormalized) &&
+      normalizedVariants.includes(expectedNormalized)
+    );
+  });
+}
+
+// ========================================
+// "Schwer": Antworten gruppenweise prüfen
+// ========================================
+
 function checkInputFields() {
-  const inputs = cardContainer.querySelectorAll(".input-field");
-  let allCorrect = true;
+  const inputs = Array.from(
+    cardContainer.querySelectorAll(".input-field")
+  );
+
+  const groups = new Map();
 
   inputs.forEach((input) => {
-    const expected = normalizeText(input.dataset.answer || "");
-    const value = normalizeText(input.value || "");
-
     input.classList.remove("correct", "incorrect");
 
-    if (value === expected) {
-      input.classList.add("correct");
-    } else {
-      input.classList.add("incorrect");
-      allCorrect = false;
+    const groupName = input.dataset.group || "";
+
+    if (!groups.has(groupName)) {
+      groups.set(groupName, []);
     }
+
+    groups.get(groupName).push(input);
+  });
+
+  let allCorrect = true;
+
+  groups.forEach((groupInputs, groupName) => {
+    const expectedAnswers = groupInputs.map(
+      (input) => input.dataset.answer || ""
+    );
+
+    // Für jede Eingabe alle passenden erwarteten Antworten suchen.
+    const candidates = groupInputs.map((input) =>
+      expectedAnswers.reduce((matches, expected, index) => {
+        if (hardAnswersMatch(input.value, expected, groupName)) {
+          matches.push(index);
+        }
+
+        return matches;
+      }, [])
+    );
+
+    // Jede erwartete Antwort darf nur einer Eingabe zugeordnet werden.
+    // Die Zuordnung berücksichtigt auch überlappende Synonyme.
+    const expectedOwners = new Array(expectedAnswers.length).fill(-1);
+
+    function assignAnswer(inputIndex, visited) {
+      for (const expectedIndex of candidates[inputIndex]) {
+        if (visited.has(expectedIndex)) continue;
+
+        visited.add(expectedIndex);
+
+        const previousOwner = expectedOwners[expectedIndex];
+
+        if (
+          previousOwner === -1 ||
+          assignAnswer(previousOwner, visited)
+        ) {
+          expectedOwners[expectedIndex] = inputIndex;
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    groupInputs.forEach((input, inputIndex) => {
+      assignAnswer(inputIndex, new Set());
+    });
+
+    const matchedInputs = new Set(
+      expectedOwners.filter((owner) => owner !== -1)
+    );
+
+    groupInputs.forEach((input, inputIndex) => {
+      const correct = matchedInputs.has(inputIndex);
+
+      input.classList.add(correct ? "correct" : "incorrect");
+
+      if (!correct) {
+        allCorrect = false;
+      }
+    });
   });
 
   if (allCorrect) {
     setFeedback("Richtig! Gut gemacht.", true);
-    if (nextBtn) nextBtn.disabled = false;
   } else {
-    setFeedback("Einige Antworten stimmen noch nicht.", false);
-    if (nextBtn) nextBtn.disabled = true;
+    setFeedback(
+      "Einige Antworten fehlen, sind doppelt oder stimmen noch nicht. " +
+      "Innerhalb eines Bereichs ist die Reihenfolge egal.",
+      false
+    );
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = !allCorrect;
   }
 }
 
@@ -2315,66 +2452,191 @@ function goToNextCard() {
   renderCurrentCard();
 }
 
-// ===================
-// Inhaltsstoff-Quiz
-// ===================
+// ========================================
+// Inhaltsstofflernen: Oberbegriffe ergänzen
+// ========================================
+
+function normalizeIngredientKey(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function getIngredientQuestionTerms(value) {
+  const original = String(value ?? "").trim();
+
+  if (!original) return [];
+
+  const terms = new Set([original]);
+
+  // Klammerzusätze entfernen, ohne den Originaleintrag zu verändern.
+  // Beispiel: "Flavonoide (Hesperidin)" -> "Flavonoide"
+  let withoutBrackets = original;
+
+  while (/\([^()]*\)/.test(withoutBrackets)) {
+    withoutBrackets = withoutBrackets.replace(/\([^()]*\)/g, " ");
+  }
+
+  withoutBrackets = withoutBrackets
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (withoutBrackets) {
+    terms.add(withoutBrackets);
+  }
+
+  // Oberbegriffe anhand vollständiger Wörter erkennen.
+  // So werden auch Einträge wie "wenig ätherisches Öl" erfasst.
+  const normalized = ` ${normalizeIngredientKey(original)} `;
+
+  const parentRules = [
+    {
+      term: "Flavonoide",
+      pattern: /\bflavonoide\b/
+    },
+    {
+      term: "Bitterstoffe",
+      pattern: /\bbitterstoffe\b/
+    },
+    {
+      term: "Gerbstoffe",
+      pattern: /\bgerbstoffe\b/
+    },
+    {
+      term: "Ätherisches Öl",
+      pattern: /\baetherisch(?:es|e|en|er|em)? oel(?:e|en)?\b/
+    },
+    {
+      term: "Fettes Öl",
+      pattern: /\bfett(?:es|e|en|er|em)? oel(?:e|en)?\b/
+    },
+    {
+      term: "Polysaccharide",
+      pattern: /\bpolysaccharide\b/
+    },
+    {
+      term: "Saponine",
+      pattern: /\bsaponine\b/
+    },
+    {
+      term: "Phenolcarbonsäuren",
+      pattern: /\bphenolcarbonsaeuren\b/
+    },
+    {
+      term: "Cumarine",
+      pattern: /\b(?:cumarine|kumarine)\b/
+    },
+    {
+      term: "Phytosterole",
+      pattern: /\bphytosterole\b/
+    }
+  ];
+
+  parentRules.forEach(({ term, pattern }) => {
+    if (pattern.test(normalized)) {
+      terms.add(term);
+    }
+  });
+
+  // Schreibvarianten dieser beiden Oberbegriffe zusammenführen.
+  const canonicalNames = new Map([
+    ["aetherisches oel", "Ätherisches Öl"],
+    ["aetherische oele", "Ätherisches Öl"],
+    ["fettes oel", "Fettes Öl"],
+    ["fette oele", "Fettes Öl"],
+    ["kumarine", "Cumarine"]
+  ]);
+
+  return [...new Set(
+    [...terms].map((term) => {
+      const key = normalizeIngredientKey(term);
+      return canonicalNames.get(key) || term;
+    })
+  )];
+}
 
 function buildIngredientQuestions() {
   const questionMap = new Map();
 
+  function addQuestionTerm(term, type, germanName) {
+    const cleanTerm = String(term ?? "").trim();
+
+    if (!cleanTerm) return;
+
+    const key = `${type}::${normalizeIngredientKey(cleanTerm)}`;
+
+    if (!questionMap.has(key)) {
+      questionMap.set(key, {
+        id: key,
+        type,
+        term: cleanTerm,
+        correctAnswers: new Set()
+      });
+    }
+
+    questionMap.get(key).correctAnswers.add(germanName);
+  }
+
   baseCards.forEach((card) => {
-    const germanName = (card.germanName || "").trim();
+    const germanName = String(card.germanName || "").trim();
+
     if (!germanName) return;
 
-    const entries = [
-      ...(card.inhaltsstoffe || []).map((term) => ({
-        term: (term || "").trim(),
-        type: "Inhaltsstoff"
-      })),
-      ...(card.wirkung || []).map((term) => ({
-        term: (term || "").trim(),
-        type: "Wirkung"
-      }))
-    ];
+    // Inhaltsstoffe: Originalbegriff UND Oberbegriffe hinzufügen.
+    (card.inhaltsstoffe || []).forEach((ingredient) => {
+      getIngredientQuestionTerms(ingredient).forEach((term) => {
+        addQuestionTerm(term, "Inhaltsstoff", germanName);
+      });
+    });
 
-    entries.forEach(({ term, type }) => {
-      if (!term) return;
-
-      const key = `${type}::${term}`;
-
-      if (!questionMap.has(key)) {
-        questionMap.set(key, {
-          id: key,
-          type,
-          term,
-          correctAnswers: []
-        });
-      }
-
-      questionMap.get(key).correctAnswers.push(germanName);
+    // Wirkungen wie bisher übernehmen.
+    // Hier werden keine neuen Oberbegriffe abgeleitet.
+    (card.wirkung || []).forEach((effect) => {
+      addQuestionTerm(effect, "Wirkung", germanName);
     });
   });
 
   const allPlantNames = [...new Set(
     baseCards
-      .map((card) => (card.germanName || "").trim())
+      .map((card) => String(card.germanName || "").trim())
       .filter(Boolean)
   )];
 
   return [...questionMap.values()]
     .map((question) => {
-      const correctAnswers = [...new Set(question.correctAnswers)];
+      const correctAnswers = [...question.correctAnswers];
+
+      // Pflanzen mit passendem Oberbegriff sind bereits in
+      // correctAnswers und kommen nicht in den falschen Pool.
       const wrongAnswers = shuffleArray(
-        allPlantNames.filter((name) => !correctAnswers.includes(name))
+        allPlantNames.filter(
+          (name) => !question.correctAnswers.has(name)
+        )
       ).slice(0, 4);
 
-      const options = shuffleArray([...correctAnswers, ...wrongAnswers]);
+      const options = shuffleArray([
+        ...correctAnswers,
+        ...wrongAnswers
+      ]);
 
       return {
         id: question.id,
         term: question.term,
         type: question.type,
-        questionText: `Welche Pflanzen passen zu diesem ${question.type === "Inhaltsstoff" ? "Inhaltsstoff" : "Wirkbegriff"}?`,
+        questionText:
+          `Welche Pflanzen passen zu diesem ${
+            question.type === "Inhaltsstoff"
+              ? "Inhaltsstoff"
+              : "Wirkbegriff"
+          }?`,
         correctAnswers,
         options
       };
