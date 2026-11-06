@@ -2641,7 +2641,10 @@ function buildIngredientQuestions() {
         options
       };
     })
-    .filter((question) => question.correctAnswers.length > 0);
+    .filter((question) =>
+      question.correctAnswers.length > 0 &&
+      question.options.length <= 25
+    );
 }
 
 function startIngredientQuiz() {
@@ -2776,36 +2779,73 @@ function getRandomItems(items, count, excluded = []) {
   return shuffleArray(available).slice(0, count);
 }
 
+// ========================================
+// Vollständige richtige Antworten plus falsche Optionen
+// ========================================
+
+function buildCompleteQuizGroup(values, pool, minWrong = 2) {
+  const correct = [...new Set(values || [])];
+
+  // Ungefähr halb so viele falsche wie richtige Antworten.
+  // Standard: mindestens 2, höchstens 4 falsche Optionen.
+  // Bei Vitamin-Namen wird minWrong = 1 verwendet.
+  const wrongCount = Math.min(
+    4,
+    Math.max(minWrong, Math.ceil(correct.length / 2))
+  );
+
+  const wrong = shuffleArray(
+    [...new Set(pool)].filter(
+      (value) => !correct.includes(value)
+    )
+  ).slice(0, wrongCount);
+
+  return {
+    correct,
+    options: shuffleArray([...correct, ...wrong])
+  };
+}
+
 function buildVitaminQuestions() {
   const foodPool = getVitaminFoodPool();
   const functionPool = getVitaminFunctionPool();
   const namePool = getVitaminNamePool();
 
   return vitaminData.map((vitamin) => {
-    const correctNames = vitamin.names;
-    const correctFoods = getRandomItems(vitamin.foodSources, 2);
-    const correctFunctions = getRandomItems(vitamin.functions, 2);
+    const names = buildCompleteQuizGroup(
+      vitamin.names,
+      namePool,
+      1
+    );
 
-    const nameWrongCount = vitamin.vitamin === "Vitamin K1/K2" ? 2 : 1;
-    const wrongNames = getRandomItems(namePool, nameWrongCount, correctNames);
+    const foods = buildCompleteQuizGroup(
+      vitamin.foodSources,
+      foodPool
+    );
 
-    const wrongFoods = getRandomItems(foodPool, 2, vitamin.foodSources);
-    const wrongFunctions = getRandomItems(functionPool, 2, vitamin.functions);
+    const functions = buildCompleteQuizGroup(
+      vitamin.functions,
+      functionPool
+    );
 
     return {
       vitamin: vitamin.vitamin,
       solubility: vitamin.solubility,
+
       correctSolubility: [vitamin.solubility],
-      solubilityOptions: shuffleArray(["fettlöslich", "wasserlöslich"]),
+      solubilityOptions: shuffleArray([
+        "fettlöslich",
+        "wasserlöslich"
+      ]),
 
-      correctNames,
-      nameOptions: shuffleArray([...correctNames, ...wrongNames]),
+      correctNames: names.correct,
+      nameOptions: names.options,
 
-      correctFoods,
-      foodOptions: shuffleArray([...correctFoods, ...wrongFoods]),
+      correctFoods: foods.correct,
+      foodOptions: foods.options,
 
-      correctFunctions,
-      functionOptions: shuffleArray([...correctFunctions, ...wrongFunctions])
+      correctFunctions: functions.correct,
+      functionOptions: functions.options
     };
   });
 }
@@ -2897,7 +2937,7 @@ function renderVitaminQuestion() {
 
         <div class="vitamin-group">
           <h3>Lebensmittelquellen</h3>
-          <p>Wähle zwei passende Lebensmittelquellen aus.</p>
+          <p>Wähle alle passenden Lebensmittelquellen aus.</p>
           <div class="vitamin-options">
             ${q.foodOptions
               .map((option) => renderVitaminOption("food", option, q.correctFoods))
@@ -2907,7 +2947,7 @@ function renderVitaminQuestion() {
 
         <div class="vitamin-group">
           <h3>Funktionen</h3>
-          <p>Wähle zwei passende Funktionen aus.</p>
+          <p>Wähle alle passenden Funktionen aus.</p>
           <div class="vitamin-options">
             ${q.functionOptions
               .map((option) => renderVitaminOption("function", option, q.correctFunctions))
@@ -2925,10 +2965,22 @@ function checkVitaminAnswer() {
   if (!q) return;
 
   const groups = [
-    { name: "solubility", required: 1 },
-    { name: "name", required: q.correctNames.length },
-    { name: "food", required: 2 },
-    { name: "function", required: 2 }
+    {
+      name: "solubility",
+      required: q.correctSolubility.length
+    },
+    {
+      name: "name",
+      required: q.correctNames.length
+    },
+    {
+      name: "food",
+      required: q.correctFoods.length
+    },
+    {
+      name: "function",
+      required: q.correctFunctions.length
+    }
   ];
 
   let allCorrect = true;
@@ -3071,66 +3123,40 @@ function buildTraceElementQuestions() {
   const dosePool = getTraceElementPool("dose");
 
   return traceElementData.map((item) => {
-    const occurrenceCount = getTraceElementQuestionRule(item.element, "occurrence");
-    const effectCount = getTraceElementQuestionRule(item.element, "effects");
-    const deficiencyCount = getTraceElementQuestionRule(item.element, "deficiency");
-    const doseCount = getTraceElementQuestionRule(item.element, "dose");
-
-    const correctOccurrence = getRandomItems(item.occurrence, occurrenceCount);
-    const correctEffects = getRandomItems(item.effects, effectCount);
-    const correctDeficiency = getRandomItems(item.deficiency, deficiencyCount);
-    const correctDose = getRandomItems(item.dose, doseCount);
-
-    const wrongOccurrence = getRandomItems(
-      occurrencePool,
-      occurrenceCount,
-      item.occurrence
+    const occurrence = buildCompleteQuizGroup(
+      item.occurrence,
+      occurrencePool
     );
 
-    const wrongEffects = getRandomItems(
-      effectPool,
-      effectCount,
-      item.effects
+    const effects = buildCompleteQuizGroup(
+      item.effects,
+      effectPool
     );
 
-    const wrongDeficiency = getRandomItems(
-      deficiencyPool,
-      deficiencyCount,
-      item.deficiency
+    const deficiency = buildCompleteQuizGroup(
+      item.deficiency,
+      deficiencyPool
     );
 
-    const wrongDose = getRandomItems(
-      dosePool,
-      doseCount,
-      item.dose
+    const dose = buildCompleteQuizGroup(
+      item.dose,
+      dosePool
     );
 
     return {
       element: item.element,
 
-      occurrenceCorrect: correctOccurrence,
-      occurrenceOptions: shuffleArray([
-        ...correctOccurrence,
-        ...wrongOccurrence
-      ]),
+      occurrenceCorrect: occurrence.correct,
+      occurrenceOptions: occurrence.options,
 
-      effectsCorrect: correctEffects,
-      effectsOptions: shuffleArray([
-        ...correctEffects,
-        ...wrongEffects
-      ]),
+      effectsCorrect: effects.correct,
+      effectsOptions: effects.options,
 
-      deficiencyCorrect: correctDeficiency,
-      deficiencyOptions: shuffleArray([
-        ...correctDeficiency,
-        ...wrongDeficiency
-      ]),
+      deficiencyCorrect: deficiency.correct,
+      deficiencyOptions: deficiency.options,
 
-      doseCorrect: correctDose,
-      doseOptions: shuffleArray([
-        ...correctDose,
-        ...wrongDose
-      ])
+      doseCorrect: dose.correct,
+      doseOptions: dose.options
     };
   });
 }
