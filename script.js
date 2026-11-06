@@ -539,7 +539,7 @@ const baseCards = [
     stammpflanze1: "Bitterorange – Citrus aurantium",
     familieParts: ["Rautengewächse", "Rutaceae"],
     inhaltsstoffe: ["Ätherisches Öl", "Flavonoide", "Bitterstoffe"],
-    wirkung: ["sedativ", "appetitanregend"],
+    wirkung: ["sedativ", "appetitanregend", "aromatisches Bittermittel"],
     anwendung: ["Bei Erregungszuständen, Einschlafstörungen", "Anregung des Appetits (Aromatisches Bittermittel)"],
     warnhinweise: ["Als Geschmacksverbesserer in Teemischungen", "Species sedativae", "Aurantii amari extractum fluidum und sirupus"]
   },
@@ -874,7 +874,7 @@ const baseCards = [
     drogenParts: ["Bitterorangenschalen", "Aurantii amari epicarpium et mesocarpium / Pericarpium Aurantii amari", ""],
     stammpflanze1: "Bitterorange – Citrus aurantium",
     familieParts: ["Rautengewächse", "Rutaceae"],
-    inhaltsstoffe: ["Ätherisches Öl", "Bitterstoffe", "Flavonoide"],
+    inhaltsstoffe: ["Ätherisches Öl (Limonen)", "Bitterstoffe", "Flavonoide (Hesperidin, Rutosid)"],
     wirkung: ["verdauungsfördernd", "appetitanregend"],
     anwendung: ["Zur Anregung des Appetits und der Verdauung"],
     warnhinweise: ["Tinctura amara (ÖAB)"]
@@ -938,6 +938,54 @@ const baseCards = [
     wirkung: ["adaptogen", "antioxidativ", "belebend", "neuroprotektiv"],
     anwendung: ["Steigerung der körperlichen und geistigen Leistung", "Linderung von Stresssymptomen"],
     warnhinweise: ["Nicht in Schwangerschaft und Stillzeit", "Nicht unter 18 Jahren", "Nicht bei Nieren- und Lebererkrankungen", "Nicht am Abend einnehmen"]
+  },
+  {
+    id: "loewenzahnwurzel",
+    germanName: "Löwenzahnwurzel",
+    levels: ["einfach", "mittel", "schwer"],
+    drogenParts: ["Löwenzahnwurzel", "Taraxaci", "radix"],
+    stammpflanze1: "Löwenzahn – Taraxacum officinale",
+    familieParts: ["Korbblütler", "Asteraceae"],
+    inhaltsstoffe: ["Bitterstoffe", "Polysaccharide (Inulin, Schleim)"],
+    wirkung: ["Anregung der Verdauung", "Anregung der Nierentätigkeit"],
+    anwendung: ["Bei Verdauungsbeschwerden", "Zur Anregung der Nierentätigkeit"],
+    warnhinweise: []
+  },
+  {
+    id: "bitterorangenblaetter",
+    germanName: "Bitterorangenblätter",
+    levels: ["einfach", "mittel", "schwer"],
+    drogenParts: ["Bitterorangenblätter", "Aurantii amari", "folium"],
+    stammpflanze1: "Bitterorange – Citrus aurantium",
+    familieParts: ["Rautengewächse", "Rutaceae"],
+    inhaltsstoffe: ["Ätherisches Öl", "Flavonoide (Hesperidin)"],
+    wirkung: ["beruhigend", "verdauungsanregend"],
+    anwendung: ["Bei Erregungszuständen und Einschlafstörungen", "Zur Verdauungsanregung in Teemischungen"],
+    warnhinweise: []
+  },
+  {
+    id: "loewenzahnblaetter",
+    germanName: "Löwenzahnblätter",
+    levels: ["einfach", "mittel", "schwer"],
+    drogenParts: ["Löwenzahnblätter", "Taraxaci", "folium"],
+    stammpflanze1: "Löwenzahn – Taraxacum officinale",
+    familieParts: ["Korbblütler", "Asteraceae"],
+    inhaltsstoffe: ["Bitterstoffe", "Flavonoide", "Mineralien, vor allem Kalium"],
+    wirkung: ["Anregung der Verdauung", "Anregung der Nierentätigkeit"],
+    anwendung: ["Bei Verdauungsbeschwerden", "Zur Anregung der Nierentätigkeit"],
+    warnhinweise: []
+  },
+  {
+    id: "schafgarbe",
+    germanName: "Schafgarbenkraut",
+    levels: ["einfach", "mittel", "schwer"],
+    drogenParts: ["Schafgarbenkraut", "Millefolii", "herba"],
+    stammpflanze1: "Schafgarbe – Achillea millefolium",
+    familieParts: ["Korbblütler", "Asteraceae"],
+    inhaltsstoffe: ["Ätherisches Öl", "Bitterstoffe (Sesquiterpenlactone)", "Flavonoide"],
+    wirkung: ["cholagog", "spasmolytisch", "adstringierend", "antiphlogistisch"],
+    anwendung: ["Bei leichten krampfartigen Verdauungsbeschwerden", "Zur Anregung des Appetits"],
+    warnhinweise: []
   },
   {
     id: "ashwagandha",
