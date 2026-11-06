@@ -3277,7 +3277,7 @@ function renderTraceElementQuestion() {
 
         <div class="trace-element-group">
           <h3>Empfohlene Tagesdosis für Erwachsene</h3>
-          <p>Wähle die passende empfohlene Tagesdosis aus.</p>
+          <p>Wähle alle passenden Angaben zur empfohlenen Tagesdosis aus.</p>
           <div class="trace-element-options">
             ${q.doseOptions
               .map((option) =>
