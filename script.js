@@ -3384,60 +3384,101 @@ function goToNextTraceElementQuestion() {
 
 function runCustomSearch() {
   const rawTerm = customSearchInput.value.trim();
-  customSearchResults.innerHTML = "";
+  customSearchResults.replaceChildren();
 
   if (!rawTerm) {
-    customSearchResults.innerHTML = "<p>Bitte ein Suchwort eingeben.</p>";
+    customSearchResults.innerHTML =
+      "<p>Bitte ein Suchwort eingeben.</p>";
     return;
   }
 
-  const term = rawTerm.toLowerCase();
+  // Groß-/Kleinschreibung und Umlaut-Schreibweisen vereinheitlichen.
+  function normalizePlantSearch(value) {
+    return String(value ?? "")
+      .toLowerCase()
+      .replace(/ä/g, "ae")
+      .replace(/ö/g, "oe")
+      .replace(/ü/g, "ue")
+      .replace(/ß/g, "ss")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  const term = normalizePlantSearch(rawTerm);
 
   const matches = baseCards.filter((card) => {
-    const haystack = [
-      card.germanName,
-      ...(card.drogenParts || []),
-      card.stammpflanze1,
-      ...(card.familieParts || []),
-      ...(card.inhaltsstoffe || []),
-      ...(card.wirkung || []),
-      ...(card.anwendung || []),
-      ...(card.warnhinweise || [])
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+    const haystack = normalizePlantSearch(
+      [
+        card.germanName,
+        ...(card.drogenParts || []),
+        card.stammpflanze1,
+        ...(card.familieParts || []),
+        ...(card.inhaltsstoffe || []),
+        ...(card.wirkung || []),
+        ...(card.anwendung || []),
+        ...(card.warnhinweise || [])
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
 
     return haystack.includes(term);
   });
 
+  const status = document.createElement("p");
+  status.setAttribute("role", "status");
+
   if (!matches.length) {
-    customSearchResults.innerHTML = `<p>Keine Treffer für „${escapeHtml(rawTerm)}“ gefunden.</p>`;
+    status.textContent =
+      `Keine Treffer für „${rawTerm}“ gefunden.`;
+
+    customSearchResults.appendChild(status);
     return;
   }
 
-  customSearchResults.innerHTML = `
-    <ul class="custom-results-list">
-      ${matches
-        .map(
-          (card) => `
-        <li>
-          <button class="custom-result-btn" data-card-id="${card.id}">
-            ${escapeHtml(card.germanName)}
-          </button>
-        </li>
-      `
-        )
-        .join("")}
-    </ul>
-  `;
+  status.textContent =
+    `${matches.length} Treffer für „${rawTerm}“.`;
 
-  customSearchResults.querySelectorAll(".custom-result-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const cardId = btn.dataset.cardId;
-      openCardFromSearch(cardId);
+  customSearchResults.appendChild(status);
+
+  const list = document.createElement("ul");
+  list.className = "custom-results-list";
+
+  matches.forEach((card) => {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    const family = document.createElement("span");
+
+    button.type = "button";
+    button.className = "custom-result-btn";
+    button.dataset.cardId = card.id;
+    button.textContent = card.germanName;
+
+    // Datenformat:
+    // familieParts: ["Korbblütler", "Asteraceae"]
+    // Bevorzugt den lateinischen Namen anzeigen.
+    const familyParts = Array.isArray(card.familieParts)
+      ? card.familieParts
+      : [];
+
+    const latinFamily = String(familyParts[1] || "").trim();
+    const germanFamily = String(familyParts[0] || "").trim();
+
+    family.className = "plant-result-family";
+    family.textContent =
+      latinFamily || germanFamily || "Familie nicht angegeben";
+
+    button.addEventListener("click", () => {
+      openCardFromSearch(card.id);
     });
+
+    item.append(button, family);
+    list.appendChild(item);
   });
+
+  customSearchResults.appendChild(list);
 }
 
 function openCardFromSearch(cardId) {
@@ -3467,3 +3508,356 @@ function openCardFromSearch(cardId) {
 
   renderCurrentCard();
 }
+
+// ========================================
+// Eigenes Lernen: Vitamine und Spurenelemente
+// ========================================
+
+const micronutrientSearchMain =
+  document.getElementById("micronutrientSearchMain");
+
+const micronutrientSearchInput =
+  document.getElementById("micronutrientSearchInput");
+
+const micronutrientSearchForm =
+  document.getElementById("micronutrientSearchForm");
+
+const micronutrientSearchResults =
+  document.getElementById("micronutrientSearchResults");
+
+const micronutrientSearchStatus =
+  document.getElementById("micronutrientSearchStatus");
+
+const startMicronutrientSearchBtn =
+  document.getElementById("startMicronutrientSearchBtn");
+
+const micronutrientSearchHomeBtn =
+  document.getElementById("micronutrientSearchHomeBtn");
+
+// Speichert nur eine aus der neuen Suche geöffnete Karte.
+// Die normalen Vitamin- und Spurenelemente-Quizze bleiben getrennt.
+let micronutrientSearchSelection = null;
+
+// Eigener Rückkehr-Button für eine aus der Suche geöffnete Quizkarte.
+const micronutrientQuizBackBtn = document.createElement("button");
+
+micronutrientQuizBackBtn.type = "button";
+micronutrientQuizBackBtn.id = "micronutrientQuizBackBtn";
+micronutrientQuizBackBtn.textContent = "Zurück zur Mikronährstoff-Suche";
+micronutrientQuizBackBtn.classList.add("hidden");
+
+if (quizTopBar) {
+  quizTopBar.appendChild(micronutrientQuizBackBtn);
+}
+
+// ----------------------------------------
+// Suchtext normalisieren
+// ----------------------------------------
+
+function normalizeMicronutrientSearch(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Alle Werte durchsuchen, auch Arrays und verschachtelte Objekte.
+// Dadurch werden auch später ergänzte Datenfelder berücksichtigt.
+function getMicronutrientSearchValues(value) {
+  if (Array.isArray(value)) {
+    return value.flatMap(getMicronutrientSearchValues);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap(
+      getMicronutrientSearchValues
+    );
+  }
+
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  return [String(value)];
+}
+
+function getMicronutrientSearchEntries() {
+  return [
+    ...vitaminData.map((data, index) => ({
+      type: "vitamin",
+      index,
+      name: data.vitamin,
+      category: "Vitamin",
+      data
+    })),
+
+    ...traceElementData.map((data, index) => ({
+      type: "trace",
+      index,
+      name: data.element,
+      category: "Spurenelement",
+      data
+    }))
+  ];
+}
+
+// ----------------------------------------
+// Suchansicht anzeigen
+// ----------------------------------------
+
+function showMicronutrientSearch() {
+  if (!micronutrientSearchMain) return;
+
+  micronutrientSearchSelection = null;
+  fromSearchMode = false;
+  searchCardId = null;
+  currentMode = "micronutrient-search";
+
+  document.body.classList.remove(
+    "vitamin-mode",
+    "trace-element-mode"
+  );
+
+  landing.classList.add("hidden");
+  app.classList.add("hidden");
+
+  micronutrientSearchMain.classList.remove("hidden");
+  micronutrientQuizBackBtn.classList.add("hidden");
+
+  if (backToSearchBtn) {
+    backToSearchBtn.classList.add("hidden");
+  }
+
+  clearFeedback();
+  window.scrollTo(0, 0);
+  micronutrientSearchInput.focus();
+}
+
+// ----------------------------------------
+// Vollständigen Mikronährstoff-Datenbestand durchsuchen
+// ----------------------------------------
+
+function runMicronutrientSearch() {
+  const rawTerm = micronutrientSearchInput.value.trim();
+  const term = normalizeMicronutrientSearch(rawTerm);
+
+  micronutrientSearchResults.replaceChildren();
+
+  if (!term) {
+    micronutrientSearchStatus.textContent =
+      "Bitte einen Suchbegriff eingeben.";
+    return;
+  }
+
+  const matches = getMicronutrientSearchEntries().filter(
+    (entry) => {
+      const haystack = normalizeMicronutrientSearch(
+        [
+          entry.category,
+          ...getMicronutrientSearchValues(entry.data)
+        ].join(" ")
+      );
+
+      return haystack.includes(term);
+    }
+  );
+
+  if (!matches.length) {
+    micronutrientSearchStatus.textContent =
+      `Keine Treffer für „${rawTerm}“ gefunden.`;
+    return;
+  }
+
+  micronutrientSearchStatus.textContent =
+    `${matches.length} Treffer für „${rawTerm}“.`;
+
+  const list = document.createElement("ul");
+  list.className = "custom-results-list";
+
+  matches.forEach((entry) => {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    const category = document.createElement("span");
+
+    button.type = "button";
+    button.className = "custom-result-btn";
+    button.textContent = entry.name;
+
+    category.className = "micronutrient-result-type";
+    category.textContent = entry.category;
+
+    button.addEventListener("click", () => {
+      openMicronutrientSearchCard(entry.type, entry.index);
+    });
+
+    item.append(button, category);
+    list.appendChild(item);
+  });
+
+  micronutrientSearchResults.appendChild(list);
+}
+
+// ----------------------------------------
+// Passendes vorhandenes Multiple-Choice-Quiz öffnen
+// ----------------------------------------
+
+function openMicronutrientSearchCard(type, index) {
+  if (
+    !Number.isInteger(index) ||
+    index < 0 ||
+    !["vitamin", "trace"].includes(type)
+  ) {
+    return;
+  }
+
+  const data =
+    type === "vitamin" ? vitaminData : traceElementData;
+
+  if (!data[index]) return;
+
+  micronutrientSearchSelection = { type, index };
+
+  fromSearchMode = false;
+  searchCardId = null;
+
+  micronutrientSearchMain.classList.add("hidden");
+
+  document.body.classList.remove(
+    "vitamin-mode",
+    "trace-element-mode"
+  );
+
+  showApp();
+
+  if (type === "vitamin") {
+    currentMode = "vitamins";
+
+    showVitaminLayout();
+
+    // Die vorhandenen Regeln für richtige/falsche Optionen
+    // bleiben erhalten. Nur die gewählte Karte wird angezeigt.
+    vitaminQuestions = [buildVitaminQuestions()[index]];
+    currentVitaminQuestionIndex = 0;
+    vitaminChecked = false;
+
+    renderVitaminQuestion();
+  } else {
+    currentMode = "trace-elements";
+
+    showTraceElementLayout();
+
+    traceElementQuestions = [
+      buildTraceElementQuestions()[index]
+    ];
+    currentTraceElementQuestionIndex = 0;
+    traceElementChecked = false;
+
+    renderTraceElementQuestion();
+  }
+
+  if (backToSearchBtn) {
+    backToSearchBtn.classList.add("hidden");
+  }
+
+  micronutrientQuizBackBtn.classList.remove("hidden");
+
+  if (nextBtn) {
+    nextBtn.textContent = "Zurück zur Suche";
+  }
+
+  if (restartBtn) {
+    restartBtn.textContent = "Diese Karte neu starten";
+  }
+
+  if (cardCounter) {
+    cardCounter.textContent = "Gezielt ausgewählte Quizkarte";
+  }
+}
+
+// ----------------------------------------
+// Zustand bei Verlassen der neuen Suche aufräumen
+// ----------------------------------------
+
+function clearMicronutrientSearchSession() {
+  micronutrientSearchSelection = null;
+  micronutrientQuizBackBtn.classList.add("hidden");
+
+  if (micronutrientSearchMain) {
+    micronutrientSearchMain.classList.add("hidden");
+  }
+}
+
+// ----------------------------------------
+// Ereignisse
+// ----------------------------------------
+
+if (startMicronutrientSearchBtn) {
+  startMicronutrientSearchBtn.addEventListener("click", () => {
+    showMicronutrientSearch();
+  });
+}
+
+if (micronutrientSearchForm) {
+  micronutrientSearchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runMicronutrientSearch();
+  });
+}
+
+micronutrientQuizBackBtn.addEventListener("click", () => {
+  showMicronutrientSearch();
+});
+
+if (micronutrientSearchHomeBtn) {
+  micronutrientSearchHomeBtn.addEventListener("click", () => {
+    clearMicronutrientSearchSession();
+    resetToLandingState();
+    showLanding();
+  });
+}
+
+// Nur für eine gezielt aus der Suche geöffnete Karte:
+// "Weiter" führt zur Suche statt in das komplette Quiz.
+// Capture verhindert, dass zusätzlich der bisherige Handler läuft.
+if (nextBtn) {
+  nextBtn.addEventListener("click", (event) => {
+    if (!micronutrientSearchSelection) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    showMicronutrientSearch();
+  }, true);
+}
+
+// Nur die ausgewählte Karte mit neu gemischten Optionen wiederholen.
+if (restartBtn) {
+  restartBtn.addEventListener("click", (event) => {
+    if (!micronutrientSearchSelection) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const { type, index } = micronutrientSearchSelection;
+    openMicronutrientSearchCard(type, index);
+  }, true);
+}
+
+// Bei normaler Navigation den Zusatzmodus verlassen.
+// Die vorhandenen Klick-Handler laufen anschließend unverändert.
+[
+  backToLandingBtn,
+  startVitaminBtn,
+  startTraceElementBtn,
+  ...modeButtons
+].filter(Boolean).forEach((button) => {
+  button.addEventListener("click", () => {
+    clearMicronutrientSearchSession();
+  }, true);
+});

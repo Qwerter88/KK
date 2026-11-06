@@ -53,24 +53,46 @@
         <h2>Mikronährstoff-Quiz</h2>
         <p class="landing-subtitle">Wähle deinen Lernmodus</p>
 
-    <div class="micronutrient-buttons">
-      <div class="micronutrient-choice">
-        <div class="micronutrient-card">
-          <button type="button" id="startVitaminBtn" class="micronutrient-btn">Vitamine</button>
-          <p class="micronutrient-desc">
-            Ein multiple-choice-Quiz zu den Details der Vitamine
-          </p>
-        </div>
-      </div>
+   <div class="micronutrient-buttons">
 
-      <div class="micronutrient-choice">
-        <div class="micronutrient-card">
-          <button type="button" id="startTraceElementBtn" class="micronutrient-btn">Spurenelemente</button>
-          <p class="micronutrient-desc">
-            Ein multiple-choice-Quiz zu den Details der Spurenelemente
-          </p>
-        </div>
-      </div>
+     <div class="micronutrient-choice">
+       <div class="micronutrient-card">
+         <button
+           type="button"
+           id="startVitaminBtn"
+           class="micronutrient-btn"
+         >Vitamine</button>
+         <p class="micronutrient-desc">
+           Ein multiple-choice-Quiz zu den Details der Vitamine
+         </p>
+       </div>
+     </div>
+
+     <div class="micronutrient-choice">
+       <div class="micronutrient-card">
+         <button
+           type="button"
+           id="startTraceElementBtn"
+           class="micronutrient-btn"
+         >Spurenelemente</button>
+         <p class="micronutrient-desc">
+           Ein multiple-choice-Quiz zu den Details der Spurenelemente
+         </p>
+       </div>
+     </div>
+
+     <div class="micronutrient-choice">
+       <div class="micronutrient-card">
+         <button
+           type="button"
+           id="startMicronutrientSearchBtn"
+           class="micronutrient-btn"
+         >Eigenes Lernen</button>
+         <p class="micronutrient-desc">
+           Eine Suchfunktion für bestimmte Vitamine und Spurenelemente
+         </p>
+       </div>
+     </div>
     </div>
   </div>
   </section>
@@ -114,13 +136,20 @@
 
       <section id="customMain" class="hidden">
         <div class="custom-section">
-          <h2>Eigenes Lernen</h2>
-          <p>Suche nach einem exakten Begriff, z. B. Pflanzenname, Inhaltsstoff oder Wirkung.</p>
+          <h2>Eigenes Lernen – Arzneipflanzen</h2>
+
+          <p>
+            Suche nach Pflanzennamen, Drogenbezeichnungen, Familien,
+            Inhaltsstoffen, Wirkungen, Anwendungen oder Hinweisen.
+            Ein Treffer öffnet die passende Pflanzenkarte.
+          </p>
+
+          <label for="customSearchInput">Suchbegriff</label>
 
           <input
-            type="text"
+            type="search"
             id="customSearchInput"
-            placeholder="Suchbegriff eingeben"
+            placeholder="Zum Beispiel Thymian, Flavonoide oder Verdauungsbeschwerden"
             autocomplete="off"
           >
 
@@ -134,6 +163,51 @@
       </section>
     </main>
   </div>
+
+  <!-- Eigenes Lernen: nur Vitamine und Spurenelemente -->
+  <section
+    id="micronutrientSearchMain"
+    class="hidden"
+    aria-labelledby="micronutrientSearchHeading"
+  >
+    <div class="custom-section">
+      <h2 id="micronutrientSearchHeading">
+        Eigenes Lernen – Vitamine und Spurenelemente
+      </h2>
+
+      <p>
+        Suche nach Namen, Löslichkeit, Lebensmittelquellen,
+        Funktionen, Wirkungen, Mangelerscheinungen oder Tagesdosis.
+        Ein Treffer öffnet das passende Multiple-Choice-Quiz.
+      </p>
+
+      <form id="micronutrientSearchForm">
+        <label for="micronutrientSearchInput">Suchbegriff</label>
+
+        <input
+          type="search"
+          id="micronutrientSearchInput"
+          placeholder="Zum Beispiel Vitamin B12, Retinol oder Müdigkeit"
+          autocomplete="off"
+        >
+
+        <div class="nav-buttons">
+          <button type="submit">Suchen</button>
+          <button type="button" id="micronutrientSearchHomeBtn">
+            Zur Startseite
+          </button>
+        </div>
+      </form>
+
+      <p
+        id="micronutrientSearchStatus"
+        role="status"
+        aria-live="polite"
+      ></p>
+
+      <div id="micronutrientSearchResults"></div>
+    </div>
+  </section>
 
   <script src="script.js"></script>
 </body>
